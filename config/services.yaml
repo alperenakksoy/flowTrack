@@ -1,0 +1,21 @@
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    admin.category:
+        class: App\Admin\UserAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Entity\User, manager_type: orm, label: User }
+
+    App\:
+        resource: '../src/'
+
+    App\Routing\PageEnhancer:
+        tags:
+            -  { name: dynamic_router_route_enhancer, priority: 90 }
+    App\Routing\ContentRepository:
+        arguments: ['@doctrine']
+

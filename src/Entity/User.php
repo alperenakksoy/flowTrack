@@ -3,10 +3,12 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -43,6 +45,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     protected ?string $plainTextPassword = null;
+
+    #[ORM\ManyToOne(targetEntity: Team::class, inversedBy: 'members')]
+    protected ?Team $team = null;
+
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'assignedTo')]
+    protected Collection $assignedTasks;
+
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'createdBy')]
+    protected Collection $createdTasks;
+
+    #[ORM\OneToMany(targetEntity: Goal::class, mappedBy: 'employee', cascade: ['persist', 'remove'])]
+    private Collection $goals;
+
+    #[ORM\OneToMany(targetEntity: PerformanceReport::class, mappedBy: 'employee', cascade: ['persist', 'remove'])]
+    private Collection $performanceReports;
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    public function __construct()
+    {
+        $this->assignedTasks = new ArrayCollection();
+        $this->createdTasks = new ArrayCollection();
+        $this->goals = new ArrayCollection();
+        $this->performanceReports = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+
+    }
 
     public function getId(): ?int
     {
@@ -137,6 +170,77 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->plainTextPassword = $plainTextPassword;
     }
+
+    public function getTeam(): ?Team
+    {
+        return $this->team;
+    }
+
+    public function setTeam(?Team $team): void
+    {
+        $this->team = $team;
+    }
+
+    public function getAssignedTasks(): Collection
+    {
+        return $this->assignedTasks;
+    }
+
+    public function setAssignedTasks(Collection $assignedTasks): void
+    {
+        $this->assignedTasks = $assignedTasks;
+    }
+
+    public function getCreatedTasks(): Collection
+    {
+        return $this->createdTasks;
+    }
+
+    public function setCreatedTasks(Collection $createdTasks): void
+    {
+        $this->createdTasks = $createdTasks;
+    }
+
+    public function getGoals(): Collection
+    {
+        return $this->goals;
+    }
+
+    public function setGoals(Collection $goals): void
+    {
+        $this->goals = $goals;
+    }
+
+    public function getPerformanceReports(): Collection
+    {
+        return $this->performanceReports;
+    }
+
+    public function setPerformanceReports(Collection $performanceReports): void
+    {
+        $this->performanceReports = $performanceReports;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?\DateTimeImmutable $createdAt): void
+    {
+        $this->createdAt = $createdAt;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): void
+    {
+        $this->updatedAt = $updatedAt;
+    }
+
 
     /**
      * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.

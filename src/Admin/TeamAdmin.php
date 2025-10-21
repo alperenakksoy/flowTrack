@@ -7,6 +7,7 @@ use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Form\FormMapper;
+use Sonata\AdminBundle\Show\ShowMapper;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
@@ -66,10 +67,14 @@ class TeamAdmin extends AbstractAdmin
             ])
         ;
     }
-
-    protected function preUpdate(object $object): void
+    protected function configureShowFields(ShowMapper $show): void
     {
-
-
+        $show
+            ->add('id')
+            ->add('team_name')
+            ->add('manager')
+            ;
     }
+
+
 }

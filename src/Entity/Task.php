@@ -107,6 +107,7 @@ class Task
     public function setAssignedTo(?User $assignedTo): static
     {
         $this->assignedTo = $assignedTo;
+
         return $this;
     }
 
@@ -118,6 +119,7 @@ class Task
     public function setCreatedBy(?User $createdBy): static
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
@@ -139,6 +141,16 @@ class Task
     public function setPriority(?int $priority): void
     {
         $this->priority = $priority;
+    }
+
+    public function getPriorityLabel(): string
+    {
+        return match ($this->priority) {
+            1 => 'Low',
+            2 => 'Medium',
+            3 => 'High',
+            default => 'Unknown',
+        };
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
@@ -171,5 +183,14 @@ class Task
         $this->completedAt = $completedAt;
     }
 
+    public function __toString(): string
+    {
+        $title = $this->getTitle() ?? '';
 
+        if (mb_strlen($title) > 50) {
+            return mb_substr($title, 0, 50).'...';
+        }
+
+        return $title;
+    }
 }

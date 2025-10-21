@@ -3,8 +3,51 @@ sonata_admin:
     dashboard:
         blocks:
             - { type: sonata.admin.block.admin_list, position: left }
+        groups:
+            user:
+                icon: '<i class="fa fa-user"></i>'
+                label: Users
+                on_top: true
+            team:
+                icon: '<i class="fa fa-users"></i>'
+                label: Teams
+                on_top: true
+            task:
+                icon: '<i class="fa fa-tasks"></i>'
+                label: Tasks
+                on_top: true
+            goal:
+                icon: '<i class="fa fa-bullseye"></i>'
+                label: Goals
+                on_top: true
+            performanceReport:
+                icon: '<i class="fa fa-line-chart"></i>'
+                label: Performance Reports
+                on_top: true
 
-sonata_block:
-    blocks:
-        sonata.admin.block.admin_list:
-            contexts: [admin]
+services:
+    admin.User:
+        class: App\Admin\UserAdmin
+        tags:
+            - { name: sonata.admin,  model_class: App\Entity\User, controller: ~, manager_type: orm, group: user, label: 'User', show_in_dashboard: true }
+
+    admin.team:
+        class: App\Admin\TeamAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Entity\Team, manager_type: orm, group: team, label: 'Team', show_in_dashboard: true }
+
+    admin.task:
+        class: App\Admin\TaskAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Entity\Task, manager_type: orm, group: task, label: 'Task', show_in_dashboard: true }
+
+    admin.goal:
+        class: App\Admin\GoalAdmin
+        tags:
+            - { name: sonata.admin,  model_class: App\Entity\Goal, controller: ~, manager_type: orm, group: goal, label: 'Goal', show_in_dashboard: true }
+
+
+    admin.performanceReport:
+        class: App\Admin\PerformanceReportAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Entity\PerformanceReport, manager_type: orm, group: performanceReport, label: 'PerformanceReport', show_in_dashboard: true }

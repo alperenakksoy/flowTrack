@@ -79,12 +79,14 @@ class Team
     {
         if (!$this->members->contains($member)) {
             $this->members->add($member);
+            $member->setTeam($this);
         }
     }
     public function removeMember(User $member): void
     {
         if ($this->members->contains($member)) {
             $this->members->removeElement($member);
+            $member->setTeam(null);
         }
     }
     public function getCreatedAt(): ?\DateTimeImmutable
@@ -95,5 +97,10 @@ class Team
     public function setCreatedAt(?\DateTimeImmutable $createdAt): void
     {
         $this->createdAt = $createdAt;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getTeamName();
     }
 }

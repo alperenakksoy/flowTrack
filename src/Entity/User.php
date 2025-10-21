@@ -3,12 +3,13 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\Common\Collections\ArrayCollection;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -44,7 +45,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    protected ?string $plainTextPassword = null;
+    protected ?string $plainPassword = null;
 
     #[ORM\ManyToOne(targetEntity: Team::class, inversedBy: 'members')]
     protected ?Team $team = null;
@@ -74,7 +75,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->goals = new ArrayCollection();
         $this->performanceReports = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
-
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -161,14 +162,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPlainTextPassword(): ?string
+    public function getPlainPassword(): ?string
     {
-        return $this->plainTextPassword;
+        return $this->plainPassword;
     }
 
-    public function setPlainTextPassword(?string $plainTextPassword): void
+    public function setPlainPassword(?string $plainPassword): void
     {
-        $this->plainTextPassword = $plainTextPassword;
+        $this->plainPassword = $plainPassword;
     }
 
     public function getTeam(): ?Team
@@ -241,7 +242,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->updatedAt = $updatedAt;
     }
 
-
     /**
      * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
      */
@@ -261,6 +261,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __toString(): string
     {
-        return (string) $this->email;
+        return $this->firstName.' '.$this->lastName;
     }
 }

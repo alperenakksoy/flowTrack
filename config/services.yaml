@@ -5,11 +5,6 @@ services:
         autowire: true
         autoconfigure: true
 
-    admin.category:
-        class: App\Admin\UserAdmin
-        tags:
-            - { name: sonata.admin, model_class: App\Entity\User, manager_type: orm, label: User }
-
     App\:
         resource: '../src/'
 

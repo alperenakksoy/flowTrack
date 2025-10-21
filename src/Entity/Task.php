@@ -22,12 +22,10 @@ class Task
     #[ORM\Column(length: 50)]
     private ?string $status = 'pending'; // pending, in_progress, completed, cancelled
 
-    // Many tasks assigned to one user
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'assignedTasks')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $assignedTo = null;
 
-    // Many tasks created by one user
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'createdTasks')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $createdBy = null;

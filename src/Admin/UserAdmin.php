@@ -2,15 +2,17 @@
 
 namespace App\Admin;
 
+use App\Entity\Team;
 use App\Entity\User;
+use App\Security\UserRole;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Form\FormMapper;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class UserAdmin extends AbstractAdmin
@@ -22,15 +24,18 @@ final class UserAdmin extends AbstractAdmin
             ->add('lastName', TextType::class)
             ->add('email', EmailType::class)
             ->add('roles', ChoiceType::class, [
-                'choices' => [
-                    'User' => 'ROLE_USER',
-                    'Admin' => 'ROLE_ADMIN',
-                ],
+                'choices' => UserRole::getChoices(),
                 'multiple' => true,
                 'expanded' => true,
-                'required' => true,
             ])
-            ->add('plainTextPassword', PasswordType::class, ['required' => false])
+            ->add('plainPassword', PasswordType::class, ['required' => false])
+            ->add('team', EntityType::class, [
+                'class' => Team::class,
+                'label' => 'Team',
+                'placeholder' => 'Select team',
+                'required' => false,
+            ])
+            ->add('updatedAt')
             ->end()
         ;
     }
@@ -51,8 +56,20 @@ final class UserAdmin extends AbstractAdmin
             ->add('firstName')
             ->add('lastName')
             ->add('email')
-            ->add('roles')
-            ->add(ListMapper::NAME_ACTIONS, null, [
+            ->add('roles', null, [
+                'label' => 'Roles',
+            ])
+            ->add('team', null, [
+                'label' => 'Team',
+                'associated_property' => 'team_name',
+            ])
+            ->add('createdAt', null, [
+                'format' => 'Y-m-d H:i:s',
+            ])
+            ->add('updatedAt', null, [
+                'label' => 'Last Updated',
+                'format' => 'Y-m-d H:i:s',
+            ])->add(ListMapper::NAME_ACTIONS, null, [
                 'actions' => [
                     'edit' => [],
                     'delete' => [],
@@ -62,28 +79,21 @@ final class UserAdmin extends AbstractAdmin
 
     private function updatePassword(User $user): void
     {
-        $plainPassword = $user->getPlainTextPassword();
-
-        if (null === $plainPassword) {
-            throw new \InvalidArgumentException('Plain text password cannot be null');
-        }
-
-        $user->setPassword(password_hash($plainPassword, PASSWORD_DEFAULT));
+        $user->setPassword(password_hash($user->getPlainPassword(), PASSWORD_DEFAULT));
     }
 
-    /**
-     * @param User $object
-     */
+    /** @param User $object */
     public function preUpdate(object $object): void
     {
-        if (!is_null($object->getPlainTextPassword())) {
+        if (!is_null($object->getPlainPassword())) {
             $this->updatePassword($object);
         }
+        /* @var User $object */
+        $object->setUpdatedAt(new \DateTimeImmutable());
     }
 
     protected function prePersist(object $object): void
     {
         $this->updatePassword($object);
     }
-
 }

@@ -2,10 +2,12 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\PerformanceReportRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PerformanceReportRepository::class)]
+#[ApiResource]
 class PerformanceReport
 {
     #[ORM\Id]
@@ -43,9 +45,6 @@ class PerformanceReport
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $summary = null;
-
-    #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $metrics = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
@@ -166,16 +165,6 @@ class PerformanceReport
     public function setSummary(?string $summary): void
     {
         $this->summary = $summary;
-    }
-
-    public function getMetrics(): ?array
-    {
-        return $this->metrics ?? [];
-    }
-
-    public function setMetrics(?array $metrics): void
-    {
-        $this->metrics = $metrics;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable

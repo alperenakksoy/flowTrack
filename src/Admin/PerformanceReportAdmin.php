@@ -36,16 +36,6 @@ class PerformanceReportAdmin extends AbstractAdmin
                 ->add('tasksCompleted', IntegerType::class)
                 ->add('goalsTotal', IntegerType::class)
                 ->add('goalsCompleted', IntegerType::class)
-                ->add('metrics', CollectionType::class, [
-                    'label' => 'Metrics',
-                    'required' => false,
-                    'allow_add' => true,
-                    'allow_delete' => true,
-                    'entry_type' => TextType::class,
-                    'entry_options' => ['label' => false],
-                    'by_reference' => false,
-                ])
-
             ->end()
 
             ->with('Summary & Files', ['class' => 'col-md-12'])
@@ -59,16 +49,15 @@ class PerformanceReportAdmin extends AbstractAdmin
         ;
     }
 
-    protected function configureDatagridFilters(DatagridMapper $datagrid): void
+    protected function configureDatagridFilters(DatagridMapper $filter): void
     {
-        $datagrid
+        $filter
             ->add('employee')
             ->add('week')
             ->add('year')
             ->add('tasksTotal')
             ->add('tasksCompleted')
             ->add('goalsTotal')
-            ->add('metrics')
         ;
     }
 
@@ -82,7 +71,6 @@ class PerformanceReportAdmin extends AbstractAdmin
             ->add('tasksTotal')
             ->add('tasksCompleted')
             ->add('goalsTotal')
-            ->add('metrics')
             ->add('_actions', null, [
                 'actions' => [
                     'edit' => [],

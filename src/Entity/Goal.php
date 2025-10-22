@@ -32,7 +32,7 @@ class Goal
     private ?int $year = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $status = 'active'; // active, completed, cancelled
+    private ?string $status = 'Active'; // active, completed, cancelled
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $unit = null; // e.g., 'hours', 'items', 'percentage'
@@ -165,5 +165,9 @@ class Goal
         $this->week = $week;
 
         return $this;
+    }
+    public function __toString(): string
+    {
+        return $this->getDescription() ?? '';
     }
 }

@@ -1,0 +1,46 @@
+{% block elfinder_widget %}
+    <div class="input-group">
+        <span class="input-group-btn">
+            <button class="btn btn-default elfinder-image-change " type="button"
+                    data-elfinder-path="{{ path('elfinder', {'instance': instance, 'homeFolder': homeFolder, 'id': id }) }}"
+            >Select</button>
+        </span>
+        <input class="form-control" {{ block('widget_attributes') }}
+               type="text" {% if value is not empty %}value="{{ value }}" {% endif %}/>
+    </div>
+{% endblock %}
+
+
+{% block elfinder_image_widget %}
+    <div class="elfinder-media elfinder-image" {% if value is not empty %}style="background-image:url({{ value }});"{% endif %}>
+        <input class="form-control hidden" {{ block('widget_attributes') }}
+               type="text" {% if value is not empty %}value="{{ value }}" {% endif %}/>
+
+        {% if enable and instance is defined %}
+            <div class="btn-group elfinder-media-buttons" role="group">
+                <button type="button" class="elfinder-image-clear btn btn-danger btn-sm">
+                    <i class="fa fa-eraser" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="elfinder-image-change  btn btn-default btn-sm"
+                        data-elfinder-path="{{ path('elfinder', {'instance': instance, 'homeFolder': homeFolder, 'id': id }) }}">
+                    <i class="fa fa-image" aria-hidden="true"></i>
+                </button>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block path_widget %}
+    <div class="input-group">
+        <span class="input-group-addon">{{ prefix }}</span>
+        {{- block('form_widget_simple') -}}
+    </div>
+{% endblock %}
+
+{% block block_list_row %}
+    {% for child in form.children %}
+        <div class="admin-block" data-name="{{ child.vars.label }}">
+            {{ form_widget(child) }}
+        </div>
+    {% endfor %}
+{% endblock %}

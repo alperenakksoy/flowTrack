@@ -56,6 +56,7 @@ class TeamAdmin extends AbstractAdmin
     protected function configureListFields(ListMapper $list): void
     {
         $list
+            ->add('id')
             ->add('team_name')
             ->add('manager')
             ->add('members')

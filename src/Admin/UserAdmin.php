@@ -70,7 +70,7 @@ final class UserAdmin extends AbstractAdmin
             ->add('updatedAt', null, [
                 'label' => 'Last Updated',
                 'format' => 'Y-m-d H:i:s',
-            ])->add(ListMapper::NAME_ACTIONS, null, [
+            ])->add('_actions', null, [
                 'actions' => [
                     'edit' => [],
                     'delete' => [],
@@ -85,7 +85,10 @@ final class UserAdmin extends AbstractAdmin
             ->add('firstName')
             ->add('lastName')
             ->add('email')
-            ->add('team');
+            ->add('team')
+            ->add('goals')
+            ->add('assignedTasks');
+
     }
 
     private function updatePassword(User $user): void

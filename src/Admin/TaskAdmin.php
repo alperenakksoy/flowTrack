@@ -2,10 +2,12 @@
 
 namespace App\Admin;
 
+use App\Entity\Task;
 use App\Entity\User;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Form\FormMapper;
+use Sonata\AdminBundle\Show\ShowMapper;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -97,5 +99,24 @@ class TaskAdmin extends AbstractAdmin
             ])
             ->end()
         ;
+    }
+
+    protected function configureShowFields(ShowMapper $show): void
+    {
+        $show
+            ->add('title')
+            ->add('description')
+            ->add('status')
+            ->add('priorityLabel')
+            ->add('assignedTo')
+            ->add('assignedTo.team')
+            ->add('createdBy')
+        ;
+    }
+
+    /* @var Task $object */
+    public function preUpdate(object $object): void
+    {
+        $object->setUpdatedAt(new \DateTimeImmutable());
     }
 }

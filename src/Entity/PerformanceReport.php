@@ -170,7 +170,7 @@ class PerformanceReport
 
     public function getMetrics(): ?array
     {
-        return $this->metrics;
+        return $this->metrics ?? [];
     }
 
     public function setMetrics(?array $metrics): void
@@ -196,6 +196,11 @@ class PerformanceReport
     public function setGeneratedAt(?\DateTimeImmutable $generatedAt): void
     {
         $this->generatedAt = $generatedAt;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getEmployee() ?? '';
     }
 
 

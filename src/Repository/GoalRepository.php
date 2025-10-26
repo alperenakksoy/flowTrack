@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Goal;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,49 @@ class GoalRepository extends ServiceEntityRepository
         parent::__construct($registry, Goal::class);
     }
 
-    //    /**
-    //     * @return Goal[] Returns an array of Goal objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('g.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Returns goal statistics for a given user.
+     *
+     * @return array{
+     *     total: int,
+     *     open: int,
+     *     in_progress: int,
+     *     closed: int,
+     *     cancelled: int,
+     *     completionRate: float
+     * }
+     */
+    public function getStatisticsByUser(User $user): array
+    {
+        $qb = $this->createQueryBuilder('g')
+            ->select('g.status, COUNT(g.id) AS count')
+            ->where('g.employee = :user')
+            ->setParameter('user', $user)
+            ->groupBy('g.status');
 
-    //    public function findOneBySomeField($value): ?Goal
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $rawResults = $qb->getQuery()->getResult();
+
+        $stats = [
+            'open' => 0,
+            'in_progress' => 0,
+            'closed' => 0,
+            'cancelled' => 0,
+        ];
+
+        foreach ($rawResults as $row) {
+            $status = $row['status'];
+            if (isset($stats[$status])) {
+                $stats[$status] = (int) $row['count'];
+            }
+        }
+
+        $stats['total'] = $stats['open'] + $stats['in_progress'] + $stats['closed'] + $stats['cancelled'];
+
+        $validTotal = $stats['open'] + $stats['in_progress'] + $stats['closed'];
+        $stats['completionRate'] = $validTotal > 0
+            ? round(($stats['closed'] / $validTotal) * 100, 2)
+            : 0;
+
+        return $stats;
+    }
 }

@@ -34,7 +34,7 @@ class Goal
     private ?int $year = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $status = 'Active'; // active, completed, cancelled
+    private ?string $status = 'active'; // active, completed, cancelled
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $unit = null; // e.g., 'hours', 'items', 'percentage'

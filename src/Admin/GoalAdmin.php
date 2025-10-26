@@ -56,9 +56,10 @@ class GoalAdmin extends AbstractAdmin
                 ->add('unit', TextType::class)
                 ->add('status', ChoiceType::class, [
                     'choices' => [
-                        'Active' => 'Active',
-                        'Completed' => 'Completed',
-                        'Cancelled' => 'Cancelled',
+                        'Active' => 'active',
+                        'In Progress' => 'in_progress',
+                        'Closed' => 'closed',
+                        'Cancelled' => 'cancelled',
                     ],
                 ])
                 ->add('employee')

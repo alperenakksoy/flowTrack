@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Task;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,29 +16,20 @@ class TaskRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Task::class);
     }
+    public function getUserTaskStats(User $user): array
+    {
+        return $this->createQueryBuilder('t')
+            ->select(
+                'COUNT(t.id) as total',
+                "SUM(CASE WHEN t.status = 'open' THEN 1 ELSE 0 END) as openTasks",
+                "SUM(CASE WHEN t.status = 'in_progress' THEN 1 ELSE 0 END) as onGoingTasks",
+                "SUM(CASE WHEN t.status = 'closed' THEN 1 ELSE 0 END) as completedTasks",
+                "SUM(CASE WHEN t.status = 'cancelled' THEN 1 ELSE 0 END) as cancelledTasks"
+            )
+            ->where('t.assignedTo = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleResult();
+    }
 
-    //    /**
-    //     * @return Task[] Returns an array of Task objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('t.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Task
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

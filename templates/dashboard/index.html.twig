@@ -1,0 +1,236 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Your Dashboard - FlowTrack{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Optional: Custom styles for refinement */
+        .card-header-icon {
+            font-size: 1.2em;
+            margin-right: 0.5rem;
+        }
+        .task-description-snippet {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .goal-progress .progress {
+            height: 12px;
+        }
+        .nav-link.active {
+            font-weight: bold;
+        }
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+        }
+        .card {
+            border: none; /* Remove default card borders */
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container my-4">
+        <h1 class="mb-4">Welcome, {{ user.firstName }}!</h1>
+
+        {# Key Metrics Row #}
+        <div class="row g-4 mb-4">
+            {# Open Tasks #}
+            <div class="col-md-4 col-sm-6">
+                <div class="card text-white bg-danger shadow-sm rounded-3">
+                    <div class="card-body text-center">
+                        <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                        <h5 class="card-title">{{ dashboardData.taskStatistics.openTasks ?? 0 }}</h5>
+                        <p class="card-text">Open Tasks</p>
+                    </div>
+                </div>
+            </div>
+            {# In Progress Tasks #}
+            <div class="col-md-4 col-sm-6">
+                <div class="card text-dark bg-warning shadow-sm rounded-3">
+                    <div class="card-body text-center">
+                        <i class="fas fa-spinner fa-2x mb-2"></i>
+                        <h5 class="card-title">{{ dashboardData.taskStatistics.onGoingTasks ?? 0 }}</h5>
+                        <p class="card-text">Tasks In Progress</p>
+                    </div>
+                </div>
+            </div>
+            {# Weekly Goal Progress #}
+            <div class="col-md-4 col-sm-12">
+                <div class="card text-white bg-info shadow-sm rounded-3">
+                    <div class="card-body text-center">
+                        <i class="fas fa-bullseye fa-2x mb-2"></i>
+                        <h5 class="card-title">{{ dashboardData.goalStatistics.AverageWeeklyProgress }}%</h5>
+                        <p class="card-text">This Week's Goal Progress</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Main Content Area - Tabs #}
+        <div class="card shadow-sm rounded-3 border-light mb-4">
+            <div class="card-header bg-light">
+                <ul class="nav nav-tabs card-header-tabs" id="dashboardTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="weekly-goals-tab" data-bs-toggle="tab" data-bs-target="#weekly-goals" type="button" role="tab" aria-controls="weekly-goals" aria-selected="true">
+                            <i class="fas fa-calendar-week me-1"></i> This Week's Goals
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="active-tasks-tab" data-bs-toggle="tab" data-bs-target="#active-tasks" type="button" role="tab" aria-controls="active-tasks" aria-selected="false">
+                            <i class="fas fa-tasks me-1"></i> Active Tasks
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="all-goals-tab" data-bs-toggle="tab" data-bs-target="#all-goals" type="button" role="tab" aria-controls="all-goals" aria-selected="false">
+                            <i class="fas fa-history me-1"></i> Recent Goals
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="dashboardTabContent">
+
+                    {# Weekly Goals Tab Pane #}
+                    <div class="tab-pane fade show active" id="weekly-goals" role="tabpanel" aria-labelledby="weekly-goals-tab">
+                        <h4 class="mb-3">Goals for Week {{ dashboardData.goalStatistics.currentWeek }}, {{ dashboardData.goalStatistics.currentYear }}</h4>
+                        {% if dashboardData.goalStatistics.weeklyGoals is defined and dashboardData.goalStatistics.weeklyGoals is not empty %}
+                            <div class="list-group">
+                                {% for goal in dashboardData.goalStatistics.weeklyGoals %}
+                                    <div class="list-group-item goal-progress">
+                                        <div class="d-flex w-100 justify-content-between mb-1">
+                                            <h6 class="mb-1">{{ goal.description|raw }}</h6>
+                                            <small class="text-muted">{{ goal.status|capitalize }}</small>
+                                        </div>
+                                        <div class="progress mb-1">
+                                            <div class="progress-bar {% if goal.progressPercentage >= 100 %}bg-success{% elseif goal.progressPercentage >= 75 %}bg-info{% elseif goal.progressPercentage >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                 role="progressbar" style="width: {{ goal.progressPercentage }}%;"
+                                                 aria-valuenow="{{ goal.progressPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ goal.progressPercentage }}%
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">Current: {{ goal.progress }} / Target: {{ goal.targetValue }} {{ goal.unit }}</small>
+                                        {# Placeholder for potential update action #}
+                                        {# <button class="btn btn-sm btn-outline-secondary float-end">Update Progress</button> #}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted fst-italic">No goals set for this week.</p>
+                        {% endif %}
+                    </div>
+
+                    {# Active Tasks Tab Pane #}
+                    <div class="tab-pane fade" id="active-tasks" role="tabpanel" aria-labelledby="active-tasks-tab">
+                        <h4 class="mb-3">Your Open & In-Progress Tasks</h4>
+                        {% set activeTasks = dashboardData.tasks|filter(task => task.status in ['open', 'in_progress']) %}
+                        {% if activeTasks is not empty %}
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm align-middle">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 40%;">Title</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Due Date</th>
+                                        <th style="width: 30%;">Description Snippet</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for task in activeTasks %}
+                                        <tr>
+                                            <td class="fw-medium">{{ task.title }}</td>
+                                            <td><span class="badge {{ task.status == 'in_progress' ? 'bg-info text-dark' : 'bg-danger' }}">{{ task.status|replace({'_': ' '})|title }}</span></td>
+                                            <td>
+                                                {% if task.priority == 3 %}<span class="badge bg-danger">High</span>
+                                                {% elseif task.priority == 2 %}<span class="badge bg-warning text-dark">Medium</span>
+                                                {% else %}<span class="badge bg-secondary">Low</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ task.dueDate ? task.dueDate|date('M d, Y') : '-' }}</td>
+                                            <td class="task-description-snippet">
+                                                {{ task.description ? (task.description|striptags|slice(0, 60) ~ (task.description|striptags|length > 60 ? '...'))|raw : '-' }}
+                                            </td>
+                                            <td>
+                                                {# Placeholder for dynamic fetching/modal trigger #}
+                                                <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {# Maybe link to an edit page if applicable #}
+                                                {# <a href="#" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fas fa-edit"></i></a> #}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted fst-italic">No active tasks assigned to you.</p>
+                        {% endif %}
+                    </div>
+
+                    {# All Goals Tab Pane #}
+                    <div class="tab-pane fade" id="all-goals" role="tabpanel" aria-labelledby="all-goals-tab">
+                        <h4 class="mb-3">Your Recent Goals (History)</h4>
+                        {% if dashboardData.goals is defined and dashboardData.goals is not empty %}
+                            <div class="list-group">
+                                {% for goal in dashboardData.goals|slice(0, 15) %} {# Show more goals here #}
+                                    <div class="list-group-item goal-progress {% if goal.status == 'closed' %}list-group-item-success{% elseif goal.status == 'cancelled'%}list-group-item-light text-muted{% endif %}">
+                                        <div class="d-flex w-100 justify-content-between mb-1">
+                                            <h6 class="mb-1"><small>W{{ goal.week }}, {{ goal.year }}:</small> {{ goal.description|raw }}</h6>
+                                            <small>{{ goal.status|capitalize }}</small>
+                                        </div>
+                                        {% if goal.status != 'cancelled' %}
+                                            <div class="progress mb-1">
+                                                <div class="progress-bar {% if goal.progressPercentage >= 100 %}bg-success{% elseif goal.progressPercentage >= 75 %}bg-info{% elseif goal.progressPercentage >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                     role="progressbar" style="width: {{ goal.progressPercentage }}%;"
+                                                     aria-valuenow="{{ goal.progressPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                    {{ goal.progressPercentage }}%
+                                                </div>
+                                            </div>
+                                            <small>Progress: {{ goal.progress }} / {{ goal.targetValue }} {{ goal.unit }}</small>
+                                        {% else %}
+                                            <small>Cancelled</small>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if dashboardData.goals|length > 15 %}
+                                <a href="#" class="btn btn-outline-secondary btn-sm mt-3">View Full Goal History</a> {# Link to a future goal list page #}
+                            {% endif %}
+                        {% else %}
+                            <p class="text-muted fst-italic">No goals found in your history.</p>
+                        {% endif %}
+                    </div>
+
+                </div> {# End Tab Content #}
+            </div> {# End Card Body #}
+        </div> {# End Card #}
+
+    </div> {# End Container #}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {# Ensure Bootstrap JS is loaded for tabs #}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    {# Placeholder for Stimulus controller import if using AssetMapper #}
+    {# {{ importmap('dashboard') }} #}
+
+    {# Example inline script to activate tooltips if you add them #}
+    {# <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script> #}
+{% endblock %}
+

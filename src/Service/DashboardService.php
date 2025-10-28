@@ -55,6 +55,14 @@ class DashboardService
             'year' => $currentYear,
         ]);
 
+        $weeklyProgress = 0;
+        $formattedWeeklyGoals = $this->formatGoals($currentWeekGoals);
+
+        if (count($formattedWeeklyGoals) > 0) {
+            $totalProgress = array_sum(array_column($formattedWeeklyGoals, 'progressPercentage'));
+            $weeklyProgress = round($totalProgress / count($formattedWeeklyGoals), 1);
+        }
+
         return [
             'totalGoals' => $goalStats['total'],
             'openGoals' => $goalStats['open'],
@@ -65,29 +73,19 @@ class DashboardService
             'currentWeek' => $currentWeek,
             'currentYear' => $currentYear,
             'weeklyGoals' => $this->formatGoals($currentWeekGoals),
+            'AverageWeeklyProgress' => $weeklyProgress,
         ];
     }
 
-    private function getUserTasks(User $user, int $limit = 50): array
+    private function getUserTasks(User $user): array
     {
         $tasks = $this->taskRepository->findBy(
             ['assignedTo' => $user],
             ['createdAt' => 'DESC'],
-            $limit
+            50
         );
 
         return $this->formatTasks($tasks);
-    }
-
-    private function getUserGoals(User $user, int $limit = 50): array
-    {
-        $goals = $this->goalRepository->findBy(
-            ['employee' => $user],
-            ['year' => 'DESC', 'week' => 'DESC'],
-            $limit
-        );
-
-        return $this->formatGoals($goals);
     }
 
     private function formatTasks(array $tasks): array
@@ -112,6 +110,18 @@ class DashboardService
             ],
         ], $tasks);
     }
+
+    private function getUserGoals(User $user): array
+    {
+        $goals = $this->goalRepository->findBy(
+            ['employee' => $user],
+            ['year' => 'DESC', 'week' => 'DESC'],
+            50
+        );
+
+        return $this->formatGoals($goals);
+    }
+
     private function formatGoals(array $goals): array
     {
         return array_map(fn ($goal) => [

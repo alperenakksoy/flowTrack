@@ -1,68 +1,38 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Your Dashboard - FlowTrack{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        /* Optional: Custom styles for refinement */
-        .card-header-icon {
-            font-size: 1.2em;
-            margin-right: 0.5rem;
-        }
-        .task-description-snippet {
-            font-size: 0.9em;
-            color: #6c757d;
-        }
-        .goal-progress .progress {
-            height: 12px;
-        }
-        .nav-link.active {
-            font-weight: bold;
-        }
-        body {
-            background-color: #f8f9fa; /* Light gray background */
-        }
-        .card {
-            border: none; /* Remove default card borders */
-        }
-    </style>
-{% endblock %}
+{% block title %}Dashboard - FlowTrack{% endblock %}
 
 {% block body %}
-    <div class="container my-4">
-        <h1 class="mb-4">Welcome, {{ user.firstName }}!</h1>
+    <div class="container my-5"> {# Increased top/bottom margin #}
+        <h1 class="mb-4 display-6">Welcome, {{ user.firstName }}! 👋</h1>
 
         {# Key Metrics Row #}
-        <div class="row g-4 mb-4">
+        <div class="row g-4 mb-5"> {# Increased bottom margin #}
             {# Open Tasks #}
-            <div class="col-md-4 col-sm-6">
-                <div class="card text-white bg-danger shadow-sm rounded-3">
+            <div class="col-lg-4 col-md-6">
+                <div class="card text-white bg-danger metric-card">
                     <div class="card-body text-center">
-                        <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                        <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
                         <h5 class="card-title">{{ dashboardData.taskStatistics.openTasks ?? 0 }}</h5>
                         <p class="card-text">Open Tasks</p>
                     </div>
                 </div>
             </div>
             {# In Progress Tasks #}
-            <div class="col-md-4 col-sm-6">
-                <div class="card text-dark bg-warning shadow-sm rounded-3">
+            <div class="col-lg-4 col-md-6">
+                <div class="card text-dark bg-warning metric-card"> {# Changed text color for warning #}
                     <div class="card-body text-center">
-                        <i class="fas fa-spinner fa-2x mb-2"></i>
+                        <div class="icon"><i class="fas fa-tasks"></i></div>
                         <h5 class="card-title">{{ dashboardData.taskStatistics.onGoingTasks ?? 0 }}</h5>
                         <p class="card-text">Tasks In Progress</p>
                     </div>
                 </div>
             </div>
             {# Weekly Goal Progress #}
-            <div class="col-md-4 col-sm-12">
-                <div class="card text-white bg-info shadow-sm rounded-3">
+            <div class="col-lg-4 col-md-12"> {# Adjusted grid for large screens #}
+                <div class="card text-white bg-info metric-card">
                     <div class="card-body text-center">
-                        <i class="fas fa-bullseye fa-2x mb-2"></i>
+                        <div class="icon"><i class="fas fa-chart-line"></i></div>
                         <h5 class="card-title">{{ dashboardData.goalStatistics.AverageWeeklyProgress }}%</h5>
                         <p class="card-text">This Week's Goal Progress</p>
                     </div>
@@ -71,17 +41,17 @@
         </div>
 
         {# Main Content Area - Tabs #}
-        <div class="card shadow-sm rounded-3 border-light mb-4">
-            <div class="card-header bg-light">
+        <div class="card shadow-sm rounded-3 border-light mb-4 dashboard-tabs">
+            <div class="card-header bg-white pt-0"> {# White background, no top padding #}
                 <ul class="nav nav-tabs card-header-tabs" id="dashboardTab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="weekly-goals-tab" data-bs-toggle="tab" data-bs-target="#weekly-goals" type="button" role="tab" aria-controls="weekly-goals" aria-selected="true">
-                            <i class="fas fa-calendar-week me-1"></i> This Week's Goals
+                            <i class="fas fa-calendar-check me-1"></i> This Week's Goals
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="active-tasks-tab" data-bs-toggle="tab" data-bs-target="#active-tasks" type="button" role="tab" aria-controls="active-tasks" aria-selected="false">
-                            <i class="fas fa-tasks me-1"></i> Active Tasks
+                            <i class="fas fa-clipboard-list me-1"></i> Active Tasks
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -96,14 +66,14 @@
 
                     {# Weekly Goals Tab Pane #}
                     <div class="tab-pane fade show active" id="weekly-goals" role="tabpanel" aria-labelledby="weekly-goals-tab">
-                        <h4 class="mb-3">Goals for Week {{ dashboardData.goalStatistics.currentWeek }}, {{ dashboardData.goalStatistics.currentYear }}</h4>
+                        <h4 class="mb-3 fw-light">Goals for Week {{ dashboardData.goalStatistics.currentWeek }}, {{ dashboardData.goalStatistics.currentYear }}</h4>
                         {% if dashboardData.goalStatistics.weeklyGoals is defined and dashboardData.goalStatistics.weeklyGoals is not empty %}
-                            <div class="list-group">
+                            <div class="list-group list-group-flush"> {# Flush removes outer borders/rounding #}
                                 {% for goal in dashboardData.goalStatistics.weeklyGoals %}
-                                    <div class="list-group-item goal-progress">
-                                        <div class="d-flex w-100 justify-content-between mb-1">
-                                            <h6 class="mb-1">{{ goal.description|raw }}</h6>
-                                            <small class="text-muted">{{ goal.status|capitalize }}</small>
+                                    <div class="list-group-item goal-progress px-0 py-3"> {# Remove horizontal padding #}
+                                        <div class="d-flex w-100 justify-content-between mb-2">
+                                            <h6 class="mb-0 fw-normal">{{ goal.description|raw }}</h6>
+                                            <span class="badge rounded-pill {% if goal.status == 'in_progress' %}bg-primary{% elseif goal.status == 'closed' %}bg-success{% else %}bg-secondary{% endif %}">{{ goal.status|replace({'_': ' '})|title }}</span>
                                         </div>
                                         <div class="progress mb-1">
                                             <div class="progress-bar {% if goal.progressPercentage >= 100 %}bg-success{% elseif goal.progressPercentage >= 75 %}bg-info{% elseif goal.progressPercentage >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
@@ -113,30 +83,30 @@
                                             </div>
                                         </div>
                                         <small class="text-muted">Current: {{ goal.progress }} / Target: {{ goal.targetValue }} {{ goal.unit }}</small>
-                                        {# Placeholder for potential update action #}
-                                        {# <button class="btn btn-sm btn-outline-secondary float-end">Update Progress</button> #}
                                     </div>
                                 {% endfor %}
                             </div>
                         {% else %}
-                            <p class="text-muted fst-italic">No goals set for this week.</p>
+                            <div class="alert alert-light text-center" role="alert">
+                                ✨ No goals set for this week. Time to plan!
+                            </div>
                         {% endif %}
                     </div>
 
                     {# Active Tasks Tab Pane #}
                     <div class="tab-pane fade" id="active-tasks" role="tabpanel" aria-labelledby="active-tasks-tab">
-                        <h4 class="mb-3">Your Open & In-Progress Tasks</h4>
+                        <h4 class="mb-3 fw-light">Your Open & In-Progress Tasks</h4>
                         {% set activeTasks = dashboardData.tasks|filter(task => task.status in ['open', 'in_progress']) %}
                         {% if activeTasks is not empty %}
                             <div class="table-responsive">
-                                <table class="table table-hover table-sm align-middle">
-                                    <thead>
+                                <table class="table table-hover table-borderless table-sm align-middle"> {# Borderless table #}
+                                    <thead class="table-light"> {# Light header #}
                                     <tr>
                                         <th style="width: 40%;">Title</th>
                                         <th>Status</th>
                                         <th>Priority</th>
                                         <th>Due Date</th>
-                                        <th style="width: 30%;">Description Snippet</th>
+                                        <th style="width: 30%;">Description</th>
                                         <th>Actions</th>
                                     </tr>
                                     </thead>
@@ -144,24 +114,21 @@
                                     {% for task in activeTasks %}
                                         <tr>
                                             <td class="fw-medium">{{ task.title }}</td>
-                                            <td><span class="badge {{ task.status == 'in_progress' ? 'bg-info text-dark' : 'bg-danger' }}">{{ task.status|replace({'_': ' '})|title }}</span></td>
+                                            <td><span class="badge rounded-pill {{ task.status == 'in_progress' ? 'bg-primary' : 'bg-danger' }}">{{ task.status|replace({'_': ' '})|title }}</span></td>
                                             <td>
-                                                {% if task.priority == 3 %}<span class="badge bg-danger">High</span>
-                                                {% elseif task.priority == 2 %}<span class="badge bg-warning text-dark">Medium</span>
-                                                {% else %}<span class="badge bg-secondary">Low</span>
+                                                {% if task.priority == 3 %}<span class="badge bg-danger-subtle text-danger-emphasis rounded-pill">High</span>
+                                                {% elseif task.priority == 2 %}<span class="badge bg-warning-subtle text-warning-emphasis rounded-pill">Medium</span>
+                                                {% else %}<span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill">Low</span>
                                                 {% endif %}
                                             </td>
-                                            <td>{{ task.dueDate ? task.dueDate|date('M d, Y') : '-' }}</td>
+                                            <td>{{ task.dueDate ? task.dueDate|date('M d, Y') : '–' }}</td> {# Em dash for empty #}
                                             <td class="task-description-snippet">
-                                                {{ task.description ? (task.description|striptags|slice(0, 60) ~ (task.description|striptags|length > 60 ? '...'))|raw : '-' }}
+                                                {{ task.description ? (task.description|striptags|slice(0, 60) ~ (task.description|striptags|length > 60 ? '…'))|raw : '–' }} {# Ellipsis #}
                                             </td>
                                             <td>
-                                                {# Placeholder for dynamic fetching/modal trigger #}
-                                                <button class="btn btn-sm btn-outline-primary" title="View Details">
-                                                    <i class="fas fa-eye"></i>
+                                                <button class="btn btn-sm btn-outline-secondary" title="View Details">
+                                                    <i class="fas fa-search-plus"></i> {# Different icon #}
                                                 </button>
-                                                {# Maybe link to an edit page if applicable #}
-                                                {# <a href="#" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fas fa-edit"></i></a> #}
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -169,20 +136,22 @@
                                 </table>
                             </div>
                         {% else %}
-                            <p class="text-muted fst-italic">No active tasks assigned to you.</p>
+                            <div class="alert alert-light text-center" role="alert">
+                                👍 No active tasks. All caught up!
+                            </div>
                         {% endif %}
                     </div>
 
                     {# All Goals Tab Pane #}
                     <div class="tab-pane fade" id="all-goals" role="tabpanel" aria-labelledby="all-goals-tab">
-                        <h4 class="mb-3">Your Recent Goals (History)</h4>
+                        <h4 class="mb-3 fw-light">Your Recent Goals (History)</h4>
                         {% if dashboardData.goals is defined and dashboardData.goals is not empty %}
-                            <div class="list-group">
+                            <div class="list-group list-group-flush">
                                 {% for goal in dashboardData.goals|slice(0, 15) %} {# Show more goals here #}
-                                    <div class="list-group-item goal-progress {% if goal.status == 'closed' %}list-group-item-success{% elseif goal.status == 'cancelled'%}list-group-item-light text-muted{% endif %}">
-                                        <div class="d-flex w-100 justify-content-between mb-1">
-                                            <h6 class="mb-1"><small>W{{ goal.week }}, {{ goal.year }}:</small> {{ goal.description|raw }}</h6>
-                                            <small>{{ goal.status|capitalize }}</small>
+                                    <div class="list-group-item goal-progress px-0 py-3 {% if goal.status == 'closed' %} bg-success-subtle {% elseif goal.status == 'cancelled'%} bg-light text-muted {% endif %}">
+                                        <div class="d-flex w-100 justify-content-between mb-2">
+                                            <h6 class="mb-0 fw-normal"><small class="text-muted">W{{ goal.week }}, {{ goal.year }}:</small> {{ goal.description|raw }}</h6>
+                                            <span class="badge rounded-pill {% if goal.status == 'in_progress' %}bg-primary{% elseif goal.status == 'closed' %}bg-success{% elseif goal.status == 'cancelled' %}bg-secondary{% else %}bg-info{% endif %}">{{ goal.status|replace({'_': ' '})|title }}</span>
                                         </div>
                                         {% if goal.status != 'cancelled' %}
                                             <div class="progress mb-1">
@@ -192,18 +161,22 @@
                                                     {{ goal.progressPercentage }}%
                                                 </div>
                                             </div>
-                                            <small>Progress: {{ goal.progress }} / {{ goal.targetValue }} {{ goal.unit }}</small>
+                                            <small class="text-muted">Progress: {{ goal.progress }} / {{ goal.targetValue }} {{ goal.unit }}</small>
                                         {% else %}
-                                            <small>Cancelled</small>
+                                            <small class="text-danger fst-italic">Cancelled</small>
                                         {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>
                             {% if dashboardData.goals|length > 15 %}
-                                <a href="#" class="btn btn-outline-secondary btn-sm mt-3">View Full Goal History</a> {# Link to a future goal list page #}
+                                <div class="text-center mt-3">
+                                    <a href="#" class="btn btn-outline-primary btn-sm">View Full Goal History <i class="fas fa-arrow-right ms-1"></i></a> {# Link to a future goal list page #}
+                                </div>
                             {% endif %}
                         {% else %}
-                            <p class="text-muted fst-italic">No goals found in your history.</p>
+                            <div class="alert alert-light text-center" role="alert">
+                                🤔 No goal history found yet.
+                            </div>
                         {% endif %}
                     </div>
 
@@ -216,21 +189,98 @@
 
 {% block javascripts %}
     {{ parent() }}
-    {# Ensure Bootstrap JS is loaded for tabs #}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    {# Bootstrap JS (already included in parent if configured there) #}
+    {# <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script> #}
+{% endblock %}
 
-    {# Placeholder for Stimulus controller import if using AssetMapper #}
-    {# {{ importmap('dashboard') }} #}
+{% block stylesheets %}
+    {{ parent() }}
+    {# Font Awesome CSS (already included in parent, but kept here for clarity if needed) #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            background-color: #e9ecef; /* Lighter gray background */
+        }
+        .metric-card {
+            border: none;
+            border-radius: 0.5rem; /* Slightly more rounded corners */
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Softer shadow */
+            transition: transform 0.2s ease-in-out;
+        }
+        .metric-card:hover {
+            transform: translateY(-3px);
+        }
+        .metric-card .card-body {
+            padding: 1.5rem;
+        }
+        .metric-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.8;
+        }
+        .metric-card .card-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .metric-card .card-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        .metric-card.bg-danger .card-text { color: rgba(255, 255, 255, 0.8); }
+        .metric-card.bg-warning .card-text { color: rgba(0, 0, 0, 0.7); } /* Darker text for warning */
+        .metric-card.bg-info .card-text { color: rgba(255, 255, 255, 0.8); }
 
-    {# Example inline script to activate tooltips if you add them #}
-    {# <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        });
-    </script> #}
+        .dashboard-tabs .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+        }
+        .dashboard-tabs .nav-link {
+            color: #495057;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 0.75rem 1rem;
+            margin-bottom: -1px; /* Overlap border */
+        }
+        .dashboard-tabs .nav-link.active {
+            color: #0d6efd;
+            background-color: transparent;
+            border-bottom: 3px solid #0d6efd;
+            font-weight: 500;
+        }
+        .dashboard-tabs .nav-link:hover {
+            border-bottom: 3px solid #adb5bd;
+        }
+        .dashboard-tabs .card-body {
+            padding: 1.5rem;
+        }
+
+        .goal-progress .progress {
+            height: 10px;
+            border-radius: 5px;
+        }
+        .list-group-item {
+            border: 1px solid #dee2e6;
+            margin-bottom: 0.5rem;
+            border-radius: 0.375rem;
+        }
+        .table > :not(caption) > * > * { /* More padding in table cells */
+            padding: 0.6rem 0.5rem;
+        }
+        .table th {
+            font-weight: 500;
+            color: #495057;
+        }
+        .task-description-snippet {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        .badge {
+            font-size: 0.75em;
+            padding: 0.35em 0.65em;
+        }
+    </style>
 {% endblock %}
 

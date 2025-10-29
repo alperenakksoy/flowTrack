@@ -5,12 +5,14 @@ namespace App\Service;
 use App\Entity\User;
 use App\Repository\GoalRepository;
 use App\Repository\TaskRepository;
+use App\Repository\TeamRepository;
 
 class DashboardService
 {
     public function __construct(
         private readonly GoalRepository $goalRepository,
         private readonly TaskRepository $taskRepository,
+        private readonly TeamRepository $teamRepository,
     ) {
     }
 
@@ -21,6 +23,13 @@ class DashboardService
             'goalStatistics' => $this->getGoalStatistics($user),
             'tasks' => $this->getUserTasks($user),
             'goals' => $this->getUserGoals($user),
+        ];
+    }
+
+    public function getManagerDashboardData(User $manager): array
+    {
+        return [
+            'team' => $this->getManagerTeamData($manager),
         ];
     }
 
@@ -143,5 +152,32 @@ class DashboardService
                 'name' => $goal->getEmployee()?->getFirstName().' '.$goal->getEmployee()?->getLastName(),
             ],
         ], $goals);
+    }
+
+    public function getManagerTeamData(User $manager): array
+    {
+        $teams = $this->teamRepository->findBy(
+            ['manager' => $manager],
+            ['team_name' => 'ASC']
+        );
+
+        return $this->formatTeams($teams);
+    }
+
+    private function formatTeams(array $teams): array
+    {
+        return array_map(fn ($team) => [
+            'id' => $team->getId(),
+            'teamName' => $team->getTeamName(),
+            'manager' => $team->getManager() ? [
+                'id' => $team->getManager()->getId(),
+                'name' => trim($team->getManager()->getFirstName().' '.$team->getManager()->getLastName()),
+            ] : null,
+            'members' => array_map(fn ($member) => [
+                'id' => $member->getId(),
+                'name' => trim($member->getFirstName().' '.$member->getLastName()),
+            ], $team->getMembers()->toArray() ?? []),
+            'createdAt' => $team->getCreatedAt()?->format('Y-m-d H:i:s'),
+        ], $teams);
     }
 }

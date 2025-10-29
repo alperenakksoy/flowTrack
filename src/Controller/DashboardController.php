@@ -23,10 +23,12 @@ class DashboardController extends AbstractController
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
-        $dashboardData = $this->dashboardService->getDashboardData($user);
+        $userDashboardData = $this->dashboardService->getDashboardData($user);
+        $managerDashboardData = $this->dashboardService->getManagerDashboardData($user);
+
 
         return $this->render('dashboard/index.html.twig', [
-            'dashboardData' => $dashboardData,
+            'dashboardData' => $userDashboardData,
             'user' => $user,
         ]);
     }

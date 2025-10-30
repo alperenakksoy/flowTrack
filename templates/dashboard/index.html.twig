@@ -4,7 +4,7 @@
 
 {% block body %}
     <div class="container my-5">
-        <h1 class="mb-4 display-6">Welcome, {{ user.firstName }}! 👋</h1>
+        <h1 class="mb-4 display-6">Welcome, {{ user.firstName }}! </h1>
 
         {# Key Metrics Row #}
         <div class="row g-4 mb-4">
@@ -45,7 +45,9 @@
                 </div>
             </div>
         </div>
-
+        {% if 'ROLE_MANAGER' in user.roles %}
+            {{ 'hello' }}
+        {% endif %}
         {# Main Content Area - Tabs #}
         <ul class="nav nav-pills dashboard-nav mb-4" id="dashboardTab" role="tablist">
             <li class="nav-item flex-fill" role="presentation">

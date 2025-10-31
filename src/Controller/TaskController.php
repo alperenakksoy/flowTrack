@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Task;
 use App\Form\TaskType;
-use App\Repository\TaskRepository;
 use App\Security\Permissions;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -58,7 +57,7 @@ class TaskController extends AbstractController
     }
 
     #[Route('/task/{id}', name: 'task_show')]
-    public function show(?Task $task, EntityManagerInterface $em, Request $request): Response
+    public function show(?Task $task): Response
     {
         $manager = $this->getUser();
         if (null === $task) {
@@ -81,9 +80,4 @@ class TaskController extends AbstractController
 
         return $this->redirectToRoute('dashboard');
     }
-
-//    public function index(EntityManagerInterface $em, Request $request,TaskRepository $taskRepository): Response
-//    {
-//
-//    }
 }

@@ -32,4 +32,17 @@ class TaskRepository extends ServiceEntityRepository
             ->getSingleResult();
     }
 
+    // In TaskRepository.php
+    public function findTeamTasks($teamId)
+    {
+        return $this->createQueryBuilder('t')
+            ->select('t')
+            ->join('t.createdBy', 'u')
+            ->where('u.team = :teamId')
+            ->setParameter('teamId', $teamId)
+            ->orderBy('t.priority', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
 }

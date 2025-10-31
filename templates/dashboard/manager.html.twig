@@ -1,0 +1,691 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Manager Dashboard - FlowTrack{% endblock %}
+
+{% block body %}
+    <div class="container-fluid px-4 py-5">
+
+        <div class="row mb-5">
+            <div class="col">
+                <div class="welcome-header p-4 rounded-4 position-relative overflow-hidden">
+                    <div class="position-relative z-1">
+                        <h1 class="display-5 fw-bold text-white mb-2">Welcome back, {{ user.firstName }}</h1>
+                        <p class="text-white-50 mb-0">Here's what's happening with your teams today</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Manager Section #}
+        {% if managerDashboardData.team is defined and managerDashboardData.team is not empty %}
+
+            <div class="row g-4 mb-5">
+                {% set totalMembers = 0 %}
+                {% for team in managerDashboardData.team %}
+                    {% set totalMembers = totalMembers + team.members|length %}
+                {% endfor %}
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-card p-4 rounded-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-users fa-2x text-primary"></i>
+                            </div>
+                            <div class="stat-trend text-success small">
+                                <i class="fas fa-arrow-up me-1"></i>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold mb-1">{{ totalMembers }}</h3>
+                        <p class="text-muted mb-0 small">Team Members</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-card p-4 rounded-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-users-cog fa-2x text-success"></i>
+                            </div>
+                            <div class="stat-trend text-success small">
+                                <i class="fas fa-check me-1"></i>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold mb-1">{{ managerDashboardData.team|length }}</h3>
+                        <p class="text-muted mb-0 small">Active Teams</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-card p-4 rounded-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-tasks fa-2x text-warning"></i>
+                            </div>
+                            <div class="stat-trend text-info small">
+                                <i class="fas fa-minus me-1"></i>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold mb-1">{{ dashboardData.taskStatistics.openTasks ?? 0 }}</h3>
+                        <p class="text-muted mb-0 small">Pending Tasks</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-card p-4 rounded-4 h-100">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-chart-line fa-2x text-info"></i>
+                            </div>
+                            <div class="stat-trend text-success small">
+                                <i class="fas fa-arrow-up me-1"></i>
+                            </div>
+                        </div>
+                        <h3 class="fw-bold mb-1">{{ dashboardData.goalStatistics.AverageWeeklyProgress }}</h3>
+                        <p class="text-muted mb-0 small">Avg. Progress</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="action-card p-4 rounded-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                            <div>
+                                <h5 class="fw-semibold mb-1">Quick Actions</h5>
+                                <p class="text-muted small mb-0">Manage your teams efficiently</p>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{{ path('task_create') }}" class="btn btn-primary rounded-pill px-4">
+                                    <i class="fas fa-plus me-2"></i>Assign Task
+                                </a>
+                                <a href="#" class="btn btn-outline-primary rounded-pill px-4">
+                                    <i class="fas fa-bullseye me-2"></i>Create Goal
+                                </a>
+                                <a href="#" class="btn btn-outline-secondary rounded-pill px-4">
+                                    <i class="fas fa-chart-bar me-2"></i>View Reports
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h4 class="fw-bold mb-4">
+                        <i class="fas fa-users-cog text-primary me-2"></i>Your Teams
+                    </h4>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-5">
+                {% for team in managerDashboardData.team %}
+                    <div class="col-12">
+                        <div class="team-card rounded-4 overflow-hidden h-100">
+                            <div class="team-card-header p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h5 class="fw-bold mb-2">{{ team.teamName }}</h5>
+                                        <p class="text-muted small mb-0">
+                                            <i class="far fa-calendar me-1"></i>
+                                            Created {{ team.createdAt ? team.createdAt|date('M d, Y') : 'N/A' }}
+                                        </p>
+                                    </div>
+                                    <span class="member-badge rounded-pill px-3 py-2">
+                            <i class="fas fa-users me-1"></i>
+                            {{ team.members|length }}
+                        </span>
+                                </div>
+                            </div>
+
+                            <div class="team-card-body p-4">
+                                <h6 class="text-muted small text-uppercase mb-3 fw-semibold">Team Members</h6>
+                                {% if team.members is not empty %}
+                                    <div class="members-grid">
+                                        {% for member in team.members %}
+                                            <div class="member-item d-flex align-items-center gap-3 p-3 rounded-3 mb-2">
+                                                <div class="member-avatar rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-user text-primary"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-0 fw-semibold">{{ member.name }}</p>
+                                                </div>
+                                                <div class="member-status">
+                                                    <span class="status-dot bg-success"></span>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-users fa-2x text-muted mb-2 opacity-50"></i>
+                                        <p class="text-muted small mb-0">No team members assigned</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="team-card-footer p-4">
+                                <a href="#" class="btn btn-outline-primary w-100 rounded-pill">
+                                    View Team Details
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="row mb-4 mt-5">
+                <div class="col-12">
+                    <h4 class="fw-bold mb-4">
+                        <i class="fas fa-tasks text-warning me-2"></i>All Team Tasks
+                    </h4>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="content-card rounded-4 overflow-hidden">
+                        <div class="p-4">
+                            {% if teamTasks is defined and teamTasks is not empty %}
+                                <div class="tasks-list">
+                                    {% for task in teamTasks %}
+                                        <div class="task-item p-4 rounded-3 mb-3">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="flex-grow-1">
+                                                    <h6 class="fw-semibold mb-2">{{ task.title }}</h6>
+                                                    <p class="text-muted small mb-3">{{ task.description ? task.description|striptags|slice(0,100) ~ (task.description|striptags|length>100?'…':'') : 'No description' }}</p>
+                                                    <div class="d-flex gap-2 flex-wrap">
+                                                        {# Status Badge with enhanced logic #}
+                                                        {% set status_class = 'bg-secondary' %}
+                                                        {% if task.status == 'open' %}
+                                                            {% set status_class = 'bg-danger' %}
+                                                        {% elseif task.status == 'in_progress' %}
+                                                            {% set status_class = 'bg-primary' %}
+                                                        {% elseif task.status == 'completed' %}
+                                                            {% set status_class = 'bg-success' %}
+                                                        {% endif %}
+                                                        <span class="badge {{ status_class }} rounded-pill">
+                                                            {{ task.status|replace({'_':' '})|title }}
+                                                        </span>
+
+                                                        {# Priority Badge #}
+                                                        {% if task.priority == 3 %}
+                                                            <span class="badge bg-danger rounded-pill">High Priority</span>
+                                                        {% elseif task.priority == 2 %}
+                                                            <span class="badge bg-warning text-dark rounded-pill">Medium Priority</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary rounded-pill">Low Priority</span>
+                                                        {% endif %}
+
+                                                        {# Due Date Badge #}
+                                                        {% if task.dueDate %}
+                                                            <span class="badge bg-light text-dark rounded-pill">
+                                                                <i class="far fa-calendar me-1"></i>{{ task.dueDate|date('M d, Y') }}
+                                                            </span>
+                                                        {% endif %}
+
+                                                        {# Assigned To Badge (Added for manager view) #}
+                                                        {% if task.assignedTo %}
+                                                            <span class="badge bg-info bg-opacity-25 text-info-emphasis rounded-pill">
+                                                                <i class="fas fa-user me-1"></i>
+                                                                {# Assuming User entity has firstName and lastName properties #}
+                                                                {{ task.assignedTo.firstName }} {{ task.assignedTo.lastName }}
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <a href="{{ path('task_show',{'id':task.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill ms-3">
+                                                    <i class="fas fa-arrow-right"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="empty-state text-center py-5">
+                                    <i class="fas fa-tasks fa-3x text-muted mb-3 opacity-25"></i>
+                                    <p class="text-muted">No team tasks found</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-5 opacity-25">
+        {% endif %}
+
+        {# Employee Dashboard Section #}
+        <div class="row">
+            <div class="col-12">
+                <h4 class="fw-bold mb-4">
+                    <i class="fas fa-user-check text-success me-2"></i>My Personal Dashboard
+                </h4>
+
+                {# Key Metrics #}
+                <div class="row g-4 mb-4">
+                    {% set metrics = [
+                        {'title':'Open Tasks','value': dashboardData.taskStatistics.openTasks ?? 0,'icon':'fa-exclamation-triangle','color':'danger'},
+                        {'title':'In Progress','value': dashboardData.taskStatistics.onGoingTasks ?? 0,'icon':'fa-spinner','color':'warning'},
+                        {'title':'Week Progress','value': dashboardData.goalStatistics.AverageWeeklyProgress,'icon':'fa-chart-line','color':'info'}
+                    ] %}
+                    {% for metric in metrics %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="metric-card p-4 rounded-4 h-100">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="metric-icon bg-{{ metric.color }} bg-opacity-10 rounded-3 p-3">
+                                        <i class="fas {{ metric.icon }} fa-2x text-{{ metric.color }}"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h2 class="fw-bold mb-1">{{ metric.value }}</h2>
+                                        <p class="text-muted small mb-0">{{ metric.title }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {# Tabs Section #}
+                <div class="content-card rounded-4 overflow-hidden">
+                    <div class="tab-header p-4">
+                        <ul class="nav nav-pills custom-pills gap-2" id="dashboardTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active rounded-pill" id="weekly-goals-tab" data-bs-toggle="tab" data-bs-target="#weekly-goals" type="button">
+                                    <i class="fas fa-bullseye me-2"></i>This Week's Goals
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link rounded-pill" id="active-tasks-tab" data-bs-toggle="tab" data-bs-target="#active-tasks" type="button">
+                                    <i class="fas fa-tasks me-2"></i>Active Tasks
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link rounded-pill" id="all-goals-tab" data-bs-toggle="tab" data-bs-target="#all-goals" type="button">
+                                    <i class="fas fa-history me-2"></i>Recent Goals
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="p-4">
+                        <div class="tab-content">
+                            {# Weekly Goals #}
+                            <div class="tab-pane fade show active" id="weekly-goals">
+                                {% if dashboardData.goalStatistics.weeklyGoals is defined and dashboardData.goalStatistics.weeklyGoals is not empty %}
+                                    <div class="goals-list">
+                                        {% for goal in dashboardData.goalStatistics.weeklyGoals %}
+                                            <div class="goal-item p-4 rounded-3 mb-3">
+                                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                                    <h6 class="fw-semibold mb-0">{{ goal.description|raw }}</h6>
+                                                    <span class="badge {% if goal.status == 'in_progress' %}bg-primary{% elseif goal.status == 'closed' %}bg-success{% else %}bg-secondary{% endif %} rounded-pill px-3">
+                                                    {{ goal.status|replace({'_': ' '})|title }}
+                                                </span>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <small class="text-muted">Progress</small>
+                                                        <small class="fw-semibold">{{ goal.progressPercentage }}%</small>
+                                                    </div>
+                                                    <div class="progress rounded-pill" style="height: 12px;">
+                                                        <div class="progress-bar rounded-pill {% if goal.progressPercentage >= 100 %}bg-success{% elseif goal.progressPercentage >= 75 %}bg-info{% elseif goal.progressPercentage >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                             style="width: {{ goal.progressPercentage }}%;">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">{{ goal.progress }} / {{ goal.targetValue }} {{ goal.unit }}</small>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state text-center py-5">
+                                        <i class="fas fa-bullseye fa-3x text-muted mb-3 opacity-25"></i>
+                                        <p class="text-muted">No goals set for this week</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {# Active Tasks #}
+                            <div class="tab-pane fade" id="active-tasks">
+                                {% set activeTasks = dashboardData.tasks|filter(task => task.status in ['open','in_progress']) %}
+                                {% if activeTasks is not empty %}
+                                    <div class="tasks-list">
+                                        {% for task in activeTasks %}
+                                            <div class="task-item p-4 rounded-3 mb-3">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="fw-semibold mb-2">{{ task.title }}</h6>
+                                                        <p class="text-muted small mb-3">{{ task.description ? task.description|striptags|slice(0,100) ~ (task.description|striptags|length>100?'…':'') : 'No description' }}</p>
+                                                        <div class="d-flex gap-2 flex-wrap">
+                                                        <span class="badge {{ task.status == 'in_progress' ? 'bg-primary' : 'bg-danger' }} rounded-pill">
+                                                            {{ task.status|replace({'_':' '})|title }}
+                                                        </span>
+                                                            {% if task.priority == 3 %}
+                                                                <span class="badge bg-danger rounded-pill">High Priority</span>
+                                                            {% elseif task.priority == 2 %}
+                                                                <span class="badge bg-warning text-dark rounded-pill">Medium Priority</span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary rounded-pill">Low Priority</span>
+                                                            {% endif %}
+                                                            {% if task.dueDate %}
+                                                                <span class="badge bg-light text-dark rounded-pill">
+                                                                <i class="far fa-calendar me-1"></i>{{ task.dueDate|date('M d, Y') }}
+                                                            </span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <a href="{{ path('task_show',{'task':task.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill ms-3">
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state text-center py-5">
+                                        <i class="fas fa-tasks fa-3x text-muted mb-3 opacity-25"></i>
+                                        <p class="text-muted">No active tasks at the moment</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {# Recent Goals #}
+                            <div class="tab-pane fade" id="all-goals">
+                                {% if dashboardData.goals is defined and dashboardData.goals is not empty %}
+                                    <div class="goals-list">
+                                        {% for goal in dashboardData.goals|slice(0,15) %}
+                                            <div class="goal-item p-4 rounded-3 mb-3 {% if goal.status == 'cancelled' %}opacity-50{% endif %}">
+                                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                                    <div>
+                                                        <div class="mb-2">
+                                                            <span class="badge bg-light text-dark me-2">Week {{ goal.week }}, {{ goal.year }}</span>
+                                                        </div>
+                                                        <h6 class="fw-semibold mb-0">{{ goal.description|raw }}</h6>
+                                                    </div>
+                                                    <span class="badge {% if goal.status == 'in_progress' %}bg-primary{% elseif goal.status == 'closed' %}bg-success{% elseif goal.status == 'cancelled' %}bg-secondary{% else %}bg-info{% endif %} rounded-pill px-3">
+                                                    {{ goal.status|replace({'_':' '})|title }}
+                                                </span>
+                                                </div>
+                                                {% if goal.status != 'cancelled' %}
+                                                    <div class="mb-2">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <small class="text-muted">Progress</small>
+                                                            <small class="fw-semibold">{{ goal.progressPercentage }}%</small>
+                                                        </div>
+                                                        <div class="progress rounded-pill" style="height: 10px;">
+                                                            <div class="progress-bar rounded-pill {% if goal.progressPercentage>=100 %}bg-success{% elseif goal.progressPercentage>=75 %}bg-info{% elseif goal.progressPercentage>=40 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                                 style="width:{{ goal.progressPercentage }}%">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">{{ goal.progress }}/{{ goal.targetValue }} {{ goal.unit }}</small>
+                                                {% else %}
+                                                    <small class="text-muted fst-italic">This goal was cancelled</small>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% if dashboardData.goals|length > 15 %}
+                                        <div class="text-center mt-4">
+                                            <a href="#" class="btn btn-outline-primary rounded-pill px-4">View Full History</a>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="empty-state text-center py-5">
+                                        <i class="fas fa-history fa-3x text-muted mb-3 opacity-25"></i>
+                                        <p class="text-muted">No goal history found</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background: #f8f9fc;
+        }
+
+        /* Welcome Header */
+        .welcome-header {
+            background: var(--gradient-primary);
+            box-shadow: var(--shadow-lg);
+            border: none;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Action Card */
+        .action-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Team Cards */
+        .team-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .team-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .team-card-header {
+            background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .member-badge {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .member-item {
+            background: #f8f9fc;
+            border: 1px solid rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
+        }
+
+        .member-item:hover {
+            background: white;
+            border-color: rgba(102, 126, 234, 0.2);
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .team-card-footer {
+            background: #f8f9fc;
+            border-top: 1px solid rgba(0,0,0,0.06);
+        }
+
+        /* Metric Cards */
+        .metric-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Content Card */
+        .content-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-header {
+            background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        /* Custom Pills */
+        .custom-pills .nav-link {
+            color: #6c757d;
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 0.625rem 1.25rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .custom-pills .nav-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .custom-pills .nav-link.active {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: transparent;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Goal Items */
+        .goal-item {
+            background: #f8f9fc;
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: all 0.2s ease;
+        }
+
+        .goal-item:hover {
+            background: white;
+            border-color: rgba(102, 126, 234, 0.2);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Task Items */
+        .task-item {
+            background: #f8f9fc;
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: all 0.2s ease;
+        }
+
+        .task-item:hover {
+            background: white;
+            border-color: rgba(102, 126, 234, 0.2);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Progress Bars */
+        .progress {
+            background: rgba(0,0,0,0.05);
+        }
+
+        /* Buttons */
+        .btn {
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline-primary {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--gradient-primary);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 3rem 1rem;
+        }
+
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            padding: 0.375rem 0.75rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .welcome-header {
+                padding: 2rem 1.5rem !important;
+            }
+
+            .stat-card, .metric-card {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+{% endblock %}

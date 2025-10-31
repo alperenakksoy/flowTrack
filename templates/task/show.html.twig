@@ -1,93 +1,397 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Task Details - {{ task.title }}{% endblock %}
+{% block title %}{{ task.title }} - Task Details{% endblock %}
 
 {% block body %}
-    <div class="container my-5">
+    <div class="container-fluid px-4 py-5">
         <div class="row justify-content-center">
-            <div class="col-md-10">
-                <div class="card shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h1 class="h4 mb-0 text-primary">
-                            <i class="fas fa-tasks me-2"></i>{{ task.title }}
-                        </h1>
+            <div class="col-xl-10 col-lg-11">
 
+                <!-- Header Section -->
+                <div class="page-header mb-4">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                        <div>
+                            <a href="{{ path('dashboard') }}" class="text-muted text-decoration-none d-inline-flex align-items-center mb-3 hover-primary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                <span>Back to Dashboard</span>
+                            </a>
+                            <h1 class="display-6 fw-bold mb-2">{{ task.title }}</h1>
+                            <p class="text-muted mb-0">
+                                <i class="far fa-clock me-2"></i>
+                                Created {{ task.createdAt ? task.createdAt|date('F j, Y') : 'Unknown' }}
+                            </p>
+                        </div>
                         <div class="d-flex gap-2">
-                            <a href="{{ path('task_edit', {'id': task.id}) }}" class="btn btn-sm btn-primary">
-                                <i class="fas fa-edit me-1"></i> Edit
-                            </a>
-                            <a href="{{ path('dashboard') }}" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-1"></i> Back
+                            <a href="{{ path('task_edit', {'id': task.id}) }}" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-edit me-2"></i>Edit Task
                             </a>
                         </div>
-                    </div>
-
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <h5 class="fw-bold mb-2">Description</h5>
-                                <div class="p-3 bg-light border rounded">
-                                    {{ task.description ? task.description|raw : 'No description provided.' }}
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <h5 class="fw-bold mb-3">Details</h5>
-                                <dl class="row">
-                                    <dt class="col-sm-5">Status:</dt>
-                                    <dd class="col-sm-7">
-                                        {% set status_color = {
-                                            'open': 'danger',
-                                            'in_progress': 'info',
-                                            'closed': 'success'
-                                        }[task.status]|default('secondary') %}
-                                        <span class="badge bg-{{ status_color }}">
-                                            {{ task.status|replace({'_': ' '})|title }}
-                                        </span>
-                                    </dd>
-
-                                    <dt class="col-sm-5">Priority:</dt>
-                                    <dd class="col-sm-7">
-                                        {% set priority_color = {
-                                            1: 'secondary',
-                                            2: 'warning text-dark',
-                                            3: 'danger'
-                                        }[task.priority]|default('secondary') %}
-                                        <span class="badge bg-{{ priority_color }}">
-                                            {{ task.priorityLabel }}
-                                        </span>
-                                    </dd>
-
-                                    <dt class="col-sm-5">Assigned To:</dt>
-                                    <dd class="col-sm-7">
-                                        {{ task.assignedTo ? task.assignedTo : 'Unassigned' }}
-                                    </dd>
-
-                                    <dt class="col-sm-5">Created By:</dt>
-                                    <dd class="col-sm-7">
-                                        {{ task.createdBy ? task.createdBy : 'Unknown' }}
-                                    </dd>
-
-                                    <dt class="col-sm-5">Due Date:</dt>
-                                    <dd class="col-sm-7">
-                                        {{ task.dueDate ? task.dueDate|date('F j, Y, g:i A') : 'N/A' }}
-                                    </dd>
-
-                                    <dt class="col-sm-5">Last Updated:</dt>
-                                    <dd class="col-sm-7">
-                                        {{ task.updatedAt ? task.updatedAt|date('F j, Y, g:i A') : 'N/A' }}
-                                    </dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card-footer text-muted small">
-                        <i class="fas fa-clock me-1"></i>
-                        Created on {{ task.createdAt ? task.createdAt|date('F j, Y, g:i A') : 'Unknown' }}
                     </div>
                 </div>
+
+                <!-- Main Content -->
+                <div class="row g-4">
+
+                    <!-- Left Column - Description -->
+                    <div class="col-lg-8">
+                        <div class="content-card rounded-4 p-4 h-100">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-wrapper bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                    <i class="fas fa-align-left fa-lg text-primary"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0">Description</h5>
+                            </div>
+                            <div class="description-content p-4 rounded-3">
+                                {{ task.description ? task.description|raw : '<p class="text-muted mb-0 fst-italic">No description provided for this task.</p>' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Details & Status -->
+                    <div class="col-lg-4">
+                        <div class="details-card rounded-4 p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-wrapper bg-info bg-opacity-10 rounded-3 p-3 me-3">
+                                    <i class="fas fa-info-circle fa-lg text-info"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0">Task Details</h5>
+                            </div>
+
+                            <div class="details-list">
+                                <!-- Status -->
+                                <div class="detail-item p-3 rounded-3 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small text-uppercase fw-semibold">Status</span>
+                                        {% set status_config = {
+                                            'open': {'color': 'danger', 'icon': 'fa-exclamation-circle'},
+                                            'in_progress': {'color': 'primary', 'icon': 'fa-spinner'},
+                                            'closed': {'color': 'success', 'icon': 'fa-check-circle'}
+                                        } %}
+                                        {% set current_status = status_config[task.status]|default({'color': 'secondary', 'icon': 'fa-circle'}) %}
+                                        <span class="badge bg-{{ current_status.color }} rounded-pill px-3 py-2">
+                                        <i class="fas {{ current_status.icon }} me-1"></i>
+                                        {{ task.status|replace({'_': ' '})|title }}
+                                    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Priority -->
+                                <div class="detail-item p-3 rounded-3 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small text-uppercase fw-semibold">Priority</span>
+                                        {% set priority_config = {
+                                            1: {'color': 'secondary', 'icon': 'fa-flag', 'label': 'Low'},
+                                            2: {'color': 'warning', 'icon': 'fa-flag', 'label': 'Medium'},
+                                            3: {'color': 'danger', 'icon': 'fa-flag', 'label': 'High'}
+                                        } %}
+                                        {% set current_priority = priority_config[task.priority]|default({'color': 'secondary', 'icon': 'fa-flag', 'label': 'Unknown'}) %}
+                                        <span class="badge bg-{{ current_priority.color }} {% if current_priority.color == 'warning' %}text-dark{% endif %} rounded-pill px-3 py-2">
+                                        <i class="fas {{ current_priority.icon }} me-1"></i>
+                                        {{ task.priorityLabel|default(current_priority.label) }}
+                                    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Assigned To -->
+                                <div class="detail-item p-3 rounded-3 mb-3">
+                                    <span class="text-muted small text-uppercase fw-semibold d-block mb-2">Assigned To</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar bg-primary bg-opacity-10 rounded-circle me-2">
+                                            <i class="fas fa-user text-primary"></i>
+                                        </div>
+                                        <span class="fw-semibold">{{ task.assignedTo ? task.assignedTo : 'Unassigned' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Created By -->
+                                <div class="detail-item p-3 rounded-3 mb-3">
+                                    <span class="text-muted small text-uppercase fw-semibold d-block mb-2">Created By</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar bg-success bg-opacity-10 rounded-circle me-2">
+                                            <i class="fas fa-user-tie text-success"></i>
+                                        </div>
+                                        <span class="fw-semibold">{{ task.createdBy ? task.createdBy : 'Unknown' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Due Date -->
+                                <div class="detail-item p-3 rounded-3 mb-3">
+                                    <span class="text-muted small text-uppercase fw-semibold d-block mb-2">Due Date</span>
+                                    <div class="d-flex align-items-center">
+                                        {% if task.dueDate %}
+                                            {% set is_overdue = task.dueDate < date() and task.status != 'closed' %}
+                                            <div class="date-icon bg-{{ is_overdue ? 'danger' : 'info' }} bg-opacity-10 rounded-circle me-2">
+                                                <i class="far fa-calendar text-{{ is_overdue ? 'danger' : 'info' }}"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ task.dueDate|date('M d, Y') }}</div>
+                                                <small class="text-muted">{{ task.dueDate|date('g:i A') }}</small>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted fst-italic">No due date set</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Last Updated -->
+                                <div class="detail-item p-3 rounded-3">
+                                    <span class="text-muted small text-uppercase fw-semibold d-block mb-2">Last Updated</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="date-icon bg-secondary bg-opacity-10 rounded-circle me-2">
+                                            <i class="fas fa-sync-alt text-secondary"></i>
+                                        </div>
+                                        <div>
+                                            {% if task.updatedAt %}
+                                                <div class="fw-semibold">{{ task.updatedAt|date('M d, Y') }}</div>
+                                                <small class="text-muted">{{ task.updatedAt|date('g:i A') }}</small>
+                                            {% else %}
+                                                <span class="text-muted fst-italic">Never updated</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Card -->
+                        <div class="quick-actions-card rounded-4 p-4 mt-4">
+                            <h6 class="fw-bold mb-3">
+                                <i class="fas fa-bolt text-warning me-2"></i>
+                                Quick Actions
+                            </h6>
+                            <div class="d-grid gap-2">
+                                {% if task.status == 'open' %}
+                                    <button class="btn btn-primary rounded-pill">
+                                        <i class="fas fa-play me-2"></i>Start Task
+                                    </button>
+                                {% elseif task.status == 'in_progress' %}
+                                    <button class="btn btn-success rounded-pill">
+                                        <i class="fas fa-check me-2"></i>Complete Task
+                                    </button>
+                                {% endif %}
+                                <button class="btn btn-outline-secondary rounded-pill">
+                                    <i class="fas fa-comment me-2"></i>Add Comment
+                                </button>
+                                <button class="btn btn-outline-danger rounded-pill">
+                                    <i class="fas fa-trash me-2"></i>Delete Task
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Timeline (Optional Enhancement) -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="timeline-card rounded-4 p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-wrapper bg-success bg-opacity-10 rounded-3 p-3 me-3">
+                                    <i class="fas fa-history fa-lg text-success"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0">Activity Timeline</h5>
+                            </div>
+                            <div class="empty-state text-center py-4">
+                                <i class="fas fa-clock fa-2x text-muted mb-3 opacity-25"></i>
+                                <p class="text-muted mb-0">No activity recorded yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background: #f8f9fc;
+        }
+
+        /* Header */
+        .page-header {
+            animation: fadeInDown 0.5s ease;
+        }
+
+        .hover-primary {
+            transition: all 0.2s ease;
+        }
+
+        .hover-primary:hover {
+            color: #667eea !important;
+            transform: translateX(-4px);
+        }
+
+        /* Content Card */
+        .content-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .description-content {
+            background: #f8f9fc;
+            border: 1px solid rgba(0,0,0,0.06);
+            min-height: 200px;
+            line-height: 1.8;
+        }
+
+        /* Details Card */
+        .details-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 20px;
+        }
+
+        .detail-item {
+            background: #f8f9fc;
+            border: 1px solid rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
+        }
+
+        .detail-item:hover {
+            background: white;
+            border-color: rgba(102, 126, 234, 0.2);
+            transform: translateX(4px);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        .date-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        /* Quick Actions Card */
+        .quick-actions-card {
+            background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Timeline Card */
+        .timeline-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            font-size: 0.813rem;
+            letter-spacing: 0.3px;
+        }
+
+        /* Buttons */
+        .btn {
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--gradient-primary);
+            border-color: transparent;
+            color: white;
+        }
+
+        .btn-outline-secondary {
+            border-color: #e0e0e0;
+            color: #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .btn-outline-danger:hover {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 2rem 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .details-card {
+                position: relative;
+                top: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 1.75rem;
+            }
+
+            .detail-item {
+                padding: 0.75rem !important;
+            }
+        }
+    </style>
 {% endblock %}

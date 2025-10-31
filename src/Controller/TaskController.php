@@ -82,8 +82,8 @@ class TaskController extends AbstractController
         return $this->redirectToRoute('dashboard');
     }
 
-    public function index(EntityManagerInterface $em, Request $request,TaskRepository $taskRepository): Response
-    {
-
-    }
+//    public function index(EntityManagerInterface $em, Request $request,TaskRepository $taskRepository): Response
+//    {
+//
+//    }
 }

@@ -5,12 +5,12 @@ namespace App\Form;
 use App\Entity\Task;
 use App\Entity\Team;
 use App\Entity\User;
-
-
-use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -20,20 +20,37 @@ class TaskType extends AbstractType
     {
         $managerTeam = $options['manager_team'];
         $builder
-        ->add('title')
-        ->add('description')
-        ->add('status')
+        ->add('title', TextType::class, [
+            'label' => 'Title',
+            'attr' => [
+                'placeholder' => 'Enter task title',
+            ],
+        ])
+        ->add('description', TextareaType::class, [
+            'label' => 'Description',
+            'attr' => [
+                'rows' => 5,
+            ],
+        ])
+        ->add('status', ChoiceType::class, [
+            'label' => 'Status',
+            'choices' => [
+                'In progress' => 'In progress',
+                'Completed' => 'Completed',
+                'Cancelled' => 'Cancelled',
+            ],
+        ])
         ->add('assignedTo', EntityType::class, [
             'class' => User::class,
-            'choice_label' => 'firstname',
-            'query_builder' => function (UserRepository $er) use ($managerTeam) {
-                return $er->createQueryBuilder('u')
-                ->where('u.team = :team')
-                ->setParameter('team', $managerTeam)
-                ->orderBy('u.firstName', 'ASC');
+            'choices' => $managerTeam ? $managerTeam->getMembers() : [],
+            'choice_label' => function (User $user) {
+                return $user->getFirstName().' '.$user->getLastName();
             },
         ])
-        ->add('dueDate')
+        ->add('dueDate', DateTimeType::class, [
+            'widget' => 'single_text',
+            'label' => 'Due Date',
+        ])
         ->add('priority', ChoiceType::class, [
             'choices' => [
                 'Low' => '1',
@@ -41,17 +58,21 @@ class TaskType extends AbstractType
                 'High' => '3',
             ],
             'label' => 'Priority',
+            'expanded' => false,
         ])
-        ->add('completedAt')
+        ->add('completedAt', DateTimeType::class, [
+            'widget' => 'single_text',
+            'required' => false,
+        ])
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Task::class,
-            'manager_team' => null,
         ]);
+
         $resolver->setRequired('manager_team');
         $resolver->setAllowedTypes('manager_team', Team::class);
     }

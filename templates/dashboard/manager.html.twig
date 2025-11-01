@@ -147,9 +147,10 @@
                                                 <div class="member-avatar rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center">
                                                     <i class="fas fa-user text-primary"></i>
                                                 </div>
-                                                <div class="flex-grow-1">
-                                                    <p class="mb-0 fw-semibold">{{ member.name }}</p>
-                                                </div>
+                                                <a href="{{ path('user_show',{'id':member.id}) }}"> <div class="flex-grow-1">
+                                                        <p class="mb-0 fw-semibold">{{ member.name }}</p>
+                                                    </div>
+                                                </a>
                                                 <div class="member-status">
                                                     <span class="status-dot bg-success"></span>
                                                 </div>

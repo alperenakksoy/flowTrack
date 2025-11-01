@@ -172,9 +172,9 @@
                                 <button class="btn btn-outline-secondary rounded-pill">
                                     <i class="fas fa-comment me-2"></i>Add Comment
                                 </button>
-                                <button class="btn btn-outline-danger rounded-pill">
+                                <a href="{{ path('task_delete', {'id':task.id}) }}" class="btn btn-outline-danger rounded-pill">
                                     <i class="fas fa-trash me-2"></i>Delete Task
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>

@@ -43,6 +43,21 @@ class PerformanceReport
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $goalsTotal = null;
 
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $taskCompletionRate = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $goalCompletionRate = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $onTimeCompletionRate = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $averageTaskCompletionTime = null; // in hours
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $averagePriority = null;
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $summary = null;
 
@@ -155,6 +170,56 @@ class PerformanceReport
     public function setGoalsTotal(?int $goalsTotal): void
     {
         $this->goalsTotal = $goalsTotal;
+    }
+
+    public function getTaskCompletionRate(): ?float
+    {
+        return $this->taskCompletionRate;
+    }
+
+    public function setTaskCompletionRate(?float $taskCompletionRate): void
+    {
+        $this->taskCompletionRate = $taskCompletionRate;
+    }
+
+    public function getGoalCompletionRate(): ?float
+    {
+        return $this->goalCompletionRate;
+    }
+
+    public function setGoalCompletionRate(?float $goalCompletionRate): void
+    {
+        $this->goalCompletionRate = $goalCompletionRate;
+    }
+
+    public function getOnTimeCompletionRate(): ?float
+    {
+        return $this->onTimeCompletionRate;
+    }
+
+    public function setOnTimeCompletionRate(?float $onTimeCompletionRate): void
+    {
+        $this->onTimeCompletionRate = $onTimeCompletionRate;
+    }
+
+    public function getAverageTaskCompletionTime(): ?float
+    {
+        return $this->averageTaskCompletionTime;
+    }
+
+    public function setAverageTaskCompletionTime(?float $averageTaskCompletionTime): void
+    {
+        $this->averageTaskCompletionTime = $averageTaskCompletionTime;
+    }
+
+    public function getAveragePriority(): ?float
+    {
+        return $this->averagePriority;
+    }
+
+    public function setAveragePriority(?float $averagePriority): void
+    {
+        $this->averagePriority = $averagePriority;
     }
 
     public function getSummary(): ?string

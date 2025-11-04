@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Entity\User;
 use App\Form\TaskType;
 use App\Security\Permissions;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,10 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_MANAGER')]
 class TaskController extends AbstractController
 {
     #[Route('/task/create', name: 'task_create', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function create(EntityManagerInterface $em, Request $request): Response
     {
         $this->denyAccessUnlessGranted(Permissions::CREATE, Task::class);
@@ -25,8 +26,10 @@ class TaskController extends AbstractController
     }
 
     #[Route('/task/edit/{id}', name: 'task_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_MANAGER')]
     public function update(EntityManagerInterface $em, Task $task, Request $request): Response
     {
+        /** @var User $manager */
         $manager = $this->getUser();
 
         if ($task->getId()) {
@@ -59,7 +62,6 @@ class TaskController extends AbstractController
     #[Route('/task/{id}', name: 'task_show')]
     public function show(?Task $task): Response
     {
-        $manager = $this->getUser();
         if (null === $task) {
             throw $this->createNotFoundException('No Post found');
         }
@@ -67,11 +69,11 @@ class TaskController extends AbstractController
 
         return $this->render('task/show.html.twig', [
             'task' => $task,
-            'manager' => $manager,
         ]);
     }
 
     #[Route('/task/delete/{id}', name: 'task_delete')]
+    #[IsGranted('ROLE_MANAGER')]
     public function delete(Task $task, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted(Permissions::DELETE, $task);

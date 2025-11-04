@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Create New Task{% endblock %}
+{% block title %}Create New Goal{% endblock %}
 
 {% block body %}
     <div class="container my-4">
@@ -15,17 +15,19 @@
                     <div class="col-md-6">
                         <h4>Task Details</h4>
                         <hr>
-                        {{ form_row(form.title) }}
                         {{ form_row(form.description) }}
-                        {{ form_row(form.status) }}
-                        {{ form_row(form.priority) }}
+                        {{ form_row(form.targetValue) }}
+                        {{ form_row(form.progress) }}
+                        {{ form_row(form.unit) }}
                     </div>
 
                     <div class="col-md-6">
                         <h4>Management</h4>
                         <hr>
-                        {{ form_row(form.assignedTo) }}
-                        {{ form_row(form.dueDate) }}
+                        {{ form_row(form.employee) }}
+                        {{ form_row(form.week) }}
+                        {{ form_row(form.year) }}
+                        {{ form_row(form.status) }}
                     </div>
                 </div>
 

@@ -3,17 +3,18 @@
 namespace App\Admin;
 
 use App\Entity\Goal;
+use App\Entity\User;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Show\ShowMapper;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class GoalAdmin extends AbstractAdmin
 {
@@ -53,21 +54,46 @@ class GoalAdmin extends AbstractAdmin
                 ->add('progress', NumberType::class, [
                     'scale' => 2,
                 ])
-                ->add('unit', TextType::class)
-                ->add('status', ChoiceType::class, [
-                    'choices' => [
-                        'Active' => 'active',
-                        'In Progress' => 'in_progress',
-                        'Closed' => 'closed',
-                        'Cancelled' => 'cancelled',
-                    ],
-                ])
+            ->add('unit', ChoiceType::class, [
+                'label' => 'Unit',
+                'choices' => [
+                    'Percentage (%)' => '%',
+                    'Hours (hrs)' => 'hours',
+                    'Items' => 'items',
+                    'Tasks' => 'tasks',
+                    'Sales (USD)' => 'usd',
+                    'Sales (EUR)' => 'eur',
+                    'Other (Count)' => 'count',
+                ],
+                'placeholder' => 'Select a unit',
+                'required' => true,
+            ])
+            ->add('status', ChoiceType::class, [
+                'choices' => [
+                    'Active' => 'active',
+                    'In Progress' => 'in_progress',
+                    'Closed' => 'closed',
+                    'Cancelled' => 'cancelled',
+                ],
+            ])
                 ->add('employee')
             ->end()
             ->with('Period', ['class' => 'col-md-6'])
                 ->add('week', IntegerType::class)
                 ->add('year', IntegerType::class)
                 ->add('createdAt', DateType::class)
+                ->add('createdBy', EntityType::class, [
+                    'class' => User::class,
+                    'label' => 'Manager',
+                    'placeholder' => 'Select a manager',
+                    'required' => false,
+                    'query_builder' => function ($repository) {
+                        return $repository->createQueryBuilder('u')
+                            ->where('u.roles LIKE :role')
+                            ->setParameter('role', '%ROLE_MANAGER%')
+                            ->orderBy('u.firstName', 'ASC');
+                    },
+                ])
             ->end()
         ;
     }
@@ -97,7 +123,10 @@ class GoalAdmin extends AbstractAdmin
         ;
     }
 
-    /** @var Goal object */
+    /**
+     * @param object $object
+     * @return void object
+     */
     public function preUpdate(object $object): void
     {
         $object->setUpdatedAt(new \DateTimeImmutable());

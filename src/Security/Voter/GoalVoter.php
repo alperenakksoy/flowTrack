@@ -2,7 +2,7 @@
 
 namespace App\Security\Voter;
 
-use App\Entity\Task;
+use App\Entity\Goal;
 use App\Entity\User;
 use App\Security\Permissions;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -10,7 +10,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-class TaskVoter extends Voter
+class GoalVoter extends Voter
 {
     private const array SUPPORTED_ATTRIBUTES = [
         Permissions::LIST,
@@ -30,7 +30,7 @@ class TaskVoter extends Voter
             return false;
         }
 
-        if (!$subject instanceof Task && Task::class !== $subject) {
+        if (!$subject instanceof Goal && Goal::class !== $subject) {
             return false;
         }
 
@@ -49,9 +49,9 @@ class TaskVoter extends Voter
         return match ($attribute) {
             Permissions::LIST, Permissions::VIEW => true,
             Permissions::CREATE => $this->security->isGranted('ROLE_MANAGER'),
-            Permissions::EDIT => $subject instanceof Task && ($subject->getCreatedBy()?->getId() === $user->getId()
+            Permissions::EDIT => $subject instanceof Goal && ($subject->getCreatedBy()?->getId() === $user->getId()
                     || $this->security->isGranted('ROLE_MANAGER')),
-            Permissions::DELETE => $subject instanceof Task && $this->security->isGranted('ROLE_MANAGER'),
+            Permissions::DELETE => $subject instanceof Goal && $this->security->isGranted('ROLE_MANAGER'),
             default => false,
         };
     }

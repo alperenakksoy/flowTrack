@@ -38,6 +38,9 @@ class Goal
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $unit = null; // e.g., 'hours', 'items', 'percentage'
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'createdGoals')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?User $createdBy = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
@@ -136,7 +139,15 @@ class Goal
     {
         $this->unit = $unit;
     }
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
 
+    public function setCreatedBy(?User $createdBy): void
+    {
+        $this->createdBy = $createdBy;
+    }
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;

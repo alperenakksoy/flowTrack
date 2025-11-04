@@ -16,7 +16,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TaskType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $managerTeam = $options['manager_team'];
         $builder
@@ -30,6 +30,8 @@ class TaskType extends AbstractType
             'label' => 'Description',
             'attr' => [
                 'rows' => 5,
+                'placeholder' => 'Enter task description',
+                'class' => 'ckeditor',
             ],
         ])
         ->add('status', ChoiceType::class, [
@@ -59,10 +61,6 @@ class TaskType extends AbstractType
             ],
             'label' => 'Priority',
             'expanded' => false,
-        ])
-        ->add('completedAt', DateTimeType::class, [
-            'widget' => 'single_text',
-            'required' => false,
         ])
         ;
     }

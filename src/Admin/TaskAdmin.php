@@ -78,7 +78,15 @@ class TaskAdmin extends AbstractAdmin
             ->with('Management', ['class' => 'col-md-6'])
             ->add('createdBy', EntityType::class, [
                 'class' => User::class,
-                'label' => 'Created By',
+                'label' => 'Manager',
+                'placeholder' => 'Select a manager',
+                'required' => false,
+                'query_builder' => function ($repository) {
+                    return $repository->createQueryBuilder('u')
+                        ->where('u.roles LIKE :role')
+                        ->setParameter('role', '%ROLE_MANAGER%')
+                        ->orderBy('u.firstName', 'ASC');
+                },
             ])
             ->add('assignedTo', EntityType::class, [
                 'class' => User::class,

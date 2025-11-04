@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ task.title }} - Task Details{% endblock %}
+{% block title %}{{ goal.description|striptags|slice(0, 50) }} - Goal Details{% endblock %}
 
 {% block body %}
     <div class="container-fluid px-4 py-5">
@@ -15,15 +15,15 @@
                                 <i class="fas fa-arrow-left me-2"></i>
                                 <span>Back to Dashboard</span>
                             </a>
-                            <h1 class="display-6 fw-bold mb-2">{{ task.title }}</h1>
+                            <h1 class="display-6 fw-bold mb-2">Goal Details</h1>
                             <p class="text-muted mb-0">
                                 <i class="far fa-clock me-2"></i>
-                                Created {{ task.createdAt ? task.createdAt|date('F j, Y') : 'Unknown' }}
+                                Created {{ goal.createdAt ? goal.createdAt|date('F j, Y') : 'Unknown' }}
                             </p>
                         </div>
                         <div class="d-flex gap-2">
-                            <a href="{{ path('task_edit', {'id': task.id}) }}" class="btn btn-primary rounded-pill px-4">
-                                <i class="fas fa-edit me-2"></i>Edit Task
+                            <a href="{{ path('goal_edit', {'id': goal.id}) }}" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-edit me-2"></i>Edit Goal
                             </a>
                         </div>
                     </div>
@@ -32,9 +32,10 @@
                 <!-- Main Content -->
                 <div class="row g-4">
 
-                    <!-- Left Column - Description -->
+                    <!-- Left Column - Description & Progress -->
                     <div class="col-lg-8">
-                        <div class="content-card rounded-4 p-4 h-100">
+                        <!-- Description Card -->
+                        <div class="content-card rounded-4 p-4 mb-4">
                             <div class="d-flex align-items-center mb-4">
                                 <div class="icon-wrapper bg-primary bg-opacity-10 rounded-3 p-3 me-3">
                                     <i class="fas fa-align-left fa-lg text-primary"></i>
@@ -42,7 +43,72 @@
                                 <h5 class="fw-bold mb-0">Description</h5>
                             </div>
                             <div class="description-content p-4 rounded-3">
-                                {{ task.description ? task.description|raw : '<p class="text-muted mb-0 fst-italic">No description provided for this task.</p>' }}
+                                {{ goal.description ? goal.description|raw : '<p class="text-muted mb-0 fst-italic">No description provided for this goal.</p>' }}
+                            </div>
+                        </div>
+
+                        <!-- Progress Card -->
+                        <div class="content-card rounded-4 p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-wrapper bg-success bg-opacity-10 rounded-3 p-3 me-3">
+                                    <i class="fas fa-chart-line fa-lg text-success"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0">Progress Tracking</h5>
+                            </div>
+
+                            {% set progressPercentage = goal.targetValue > 0 ? (goal.progress / goal.targetValue * 100)|round(1) : 0 %}
+                            {% set isCompleted = progressPercentage >= 100 %}
+                            {% set isOnTrack = progressPercentage >= 50 %}
+
+                            <div class="progress-section p-4 rounded-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h3 class="mb-1 fw-bold text-{{ isCompleted ? 'success' : (isOnTrack ? 'primary' : 'warning') }}">
+                                            {{ progressPercentage }}%
+                                        </h3>
+                                        <p class="text-muted small mb-0">Completion Rate</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="display-6 fw-bold text-{{ isCompleted ? 'success' : 'primary' }}">
+                                            {{ goal.progress }}
+                                            <small class="text-muted fs-5">/ {{ goal.targetValue }}</small>
+                                        </div>
+                                        <p class="text-muted small mb-0">{{ goal.unit ? goal.unit|title : 'Units' }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="progress-bar-container position-relative mb-2" style="height: 30px; border-radius: 15px; background: #e9ecef; overflow: hidden;">
+                                    <div class="progress-bar-fill position-absolute top-0 start-0 h-100 d-flex align-items-center px-3"
+                                         style="width: {{ progressPercentage > 100 ? 100 : progressPercentage }}%;
+                                             background: linear-gradient(90deg, {{ isCompleted ? '#28a745' : (isOnTrack ? '#667eea' : '#ffc107') }} 0%, {{ isCompleted ? '#20c997' : (isOnTrack ? '#764ba2' : '#fd7e14') }} 100%);
+                                             transition: width 0.8s ease;">
+                                        {% if progressPercentage > 15 %}
+                                            <span class="text-white fw-semibold small">{{ progressPercentage }}%</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if progressPercentage > 100 %}
+                                    <div class="alert alert-success d-flex align-items-center mt-3 mb-0" role="alert">
+                                        <i class="fas fa-trophy me-2"></i>
+                                        <div>Target exceeded! Great work!</div>
+                                    </div>
+                                {% elseif isCompleted %}
+                                    <div class="alert alert-success d-flex align-items-center mt-3 mb-0" role="alert">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <div>Goal completed successfully!</div>
+                                    </div>
+                                {% elseif isOnTrack %}
+                                    <div class="alert alert-info d-flex align-items-center mt-3 mb-0" role="alert">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <div>On track to meet the target</div>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning d-flex align-items-center mt-3 mb-0" role="alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <div>Needs attention to stay on track</div>
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -54,7 +120,7 @@
                                 <div class="icon-wrapper bg-info bg-opacity-10 rounded-3 p-3 me-3">
                                     <i class="fas fa-info-circle fa-lg text-info"></i>
                                 </div>
-                                <h5 class="fw-bold mb-0">Task Details</h5>
+                                <h5 class="fw-bold mb-0">Goal Details</h5>
                             </div>
 
                             <div class="details-list">
@@ -63,32 +129,34 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="text-muted small text-uppercase fw-semibold">Status</span>
                                         {% set status_config = {
-                                            'open': {'color': 'danger', 'icon': 'fa-exclamation-circle'},
-                                            'in_progress': {'color': 'primary', 'icon': 'fa-spinner'},
-                                            'closed': {'color': 'success', 'icon': 'fa-check-circle'}
+                                            'active': {'color': 'primary', 'icon': 'fa-play-circle'},
+                                            'in_progress': {'color': 'warning', 'icon': 'fa-spinner'},
+                                            'completed': {'color': 'success', 'icon': 'fa-check-circle'},
+                                            'closed': {'color': 'success', 'icon': 'fa-check-circle'},
+                                            'cancelled': {'color': 'danger', 'icon': 'fa-times-circle'}
                                         } %}
-                                        {% set current_status = status_config[task.status]|default({'color': 'secondary', 'icon': 'fa-circle'}) %}
-                                        <span class="badge bg-{{ current_status.color }} rounded-pill px-3 py-2">
-                                        <i class="fas {{ current_status.icon }} me-1"></i>
-                                        {{ task.status|replace({'_': ' '})|title }}
-                                    </span>
+                                        {% set current_status = status_config[goal.status]|default({'color': 'secondary', 'icon': 'fa-circle'}) %}
+                                        <span class="badge bg-{{ current_status.color }} {% if current_status.color == 'warning' %}text-dark{% endif %} rounded-pill px-3 py-2">
+                                            <i class="fas {{ current_status.icon }} me-1"></i>
+                                            {{ goal.status|replace({'_': ' '})|title }}
+                                        </span>
                                     </div>
                                 </div>
 
-                                <!-- Priority -->
+                                <!-- Time Period -->
                                 <div class="detail-item p-3 rounded-3 mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-muted small text-uppercase fw-semibold">Priority</span>
-                                        {% set priority_config = {
-                                            1: {'color': 'secondary', 'icon': 'fa-flag', 'label': 'Low'},
-                                            2: {'color': 'warning', 'icon': 'fa-flag', 'label': 'Medium'},
-                                            3: {'color': 'danger', 'icon': 'fa-flag', 'label': 'High'}
-                                        } %}
-                                        {% set current_priority = priority_config[task.priority]|default({'color': 'secondary', 'icon': 'fa-flag', 'label': 'Unknown'}) %}
-                                        <span class="badge bg-{{ current_priority.color }} {% if current_priority.color == 'warning' %}text-dark{% endif %} rounded-pill px-3 py-2">
-                                        <i class="fas {{ current_priority.icon }} me-1"></i>
-                                        {{ task.priorityLabel|default(current_priority.label) }}
-                                    </span>
+                                    <span class="text-muted small text-uppercase fw-semibold d-block mb-2">Time Period</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="date-icon bg-purple bg-opacity-10 rounded-circle me-2">
+                                            <i class="fas fa-calendar-week text-purple"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">Week {{ goal.week }}, {{ goal.year }}</div>
+                                            <small class="text-muted">
+                                                {% set isCurrentWeek = goal.week == date('now')|date('W') and goal.year == date('now')|date('Y') %}
+                                                {{ isCurrentWeek ? 'Current week' : 'Week ' ~ goal.week }}
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -99,7 +167,9 @@
                                         <div class="user-avatar bg-primary bg-opacity-10 rounded-circle me-2">
                                             <i class="fas fa-user text-primary"></i>
                                         </div>
-                                        <span class="fw-semibold">{{ task.assignedTo ? task.assignedTo : 'Unassigned' }}</span>
+                                        <span class="fw-semibold">
+                                            {{ goal.employee ? goal.employee.firstname ~ ' ' ~ goal.employee.lastname : 'Unassigned' }}
+                                        </span>
                                     </div>
                                 </div>
 
@@ -110,26 +180,23 @@
                                         <div class="user-avatar bg-success bg-opacity-10 rounded-circle me-2">
                                             <i class="fas fa-user-tie text-success"></i>
                                         </div>
-                                        <span class="fw-semibold">{{ task.createdBy ? task.createdBy : 'Unknown' }}</span>
+                                        <span class="fw-semibold">
+                                            {{ goal.createdBy ? goal.createdBy.firstname ~ ' ' ~ goal.createdBy.lastname : 'Unknown' }}
+                                        </span>
                                     </div>
                                 </div>
 
-                                <!-- Due Date -->
+                                <!-- Target Value -->
                                 <div class="detail-item p-3 rounded-3 mb-3">
-                                    <span class="text-muted small text-uppercase fw-semibold d-block mb-2">Due Date</span>
+                                    <span class="text-muted small text-uppercase fw-semibold d-block mb-2">Target</span>
                                     <div class="d-flex align-items-center">
-                                        {% if task.dueDate %}
-                                            {% set is_overdue = task.dueDate < date() and task.status != 'closed' %}
-                                            <div class="date-icon bg-{{ is_overdue ? 'danger' : 'info' }} bg-opacity-10 rounded-circle me-2">
-                                                <i class="far fa-calendar text-{{ is_overdue ? 'danger' : 'info' }}"></i>
-                                            </div>
-                                            <div>
-                                                <div class="fw-semibold">{{ task.dueDate|date('M d, Y') }}</div>
-                                                <small class="text-muted">{{ task.dueDate|date('g:i A') }}</small>
-                                            </div>
-                                        {% else %}
-                                            <span class="text-muted fst-italic">No due date set</span>
-                                        {% endif %}
+                                        <div class="date-icon bg-danger bg-opacity-10 rounded-circle me-2">
+                                            <i class="fas fa-bullseye text-danger"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ goal.targetValue }}</div>
+                                            <small class="text-muted">{{ goal.unit ? goal.unit|title : 'Units' }}</small>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -141,9 +208,9 @@
                                             <i class="fas fa-sync-alt text-secondary"></i>
                                         </div>
                                         <div>
-                                            {% if task.updatedAt %}
-                                                <div class="fw-semibold">{{ task.updatedAt|date('M d, Y') }}</div>
-                                                <small class="text-muted">{{ task.updatedAt|date('g:i A') }}</small>
+                                            {% if goal.updatedAt %}
+                                                <div class="fw-semibold">{{ goal.updatedAt|date('M d, Y') }}</div>
+                                                <small class="text-muted">{{ goal.updatedAt|date('g:i A') }}</small>
                                             {% else %}
                                                 <span class="text-muted fst-italic">Never updated</span>
                                             {% endif %}
@@ -160,27 +227,27 @@
                                 Quick Actions
                             </h6>
                             <div class="d-grid gap-2">
-                                {% if task.status == 'open' %}
+                                {% if goal.status == 'active' %}
                                     <button class="btn btn-primary rounded-pill">
-                                        <i class="fas fa-play me-2"></i>Start Task
+                                        <i class="fas fa-play me-2"></i>Start Progress
                                     </button>
-                                {% elseif task.status == 'in_progress' %}
+                                {% elseif goal.status == 'in_progress' %}
                                     <button class="btn btn-success rounded-pill">
-                                        <i class="fas fa-check me-2"></i>Complete Task
+                                        <i class="fas fa-check me-2"></i>Mark Complete
                                     </button>
                                 {% endif %}
                                 <button class="btn btn-outline-secondary rounded-pill">
-                                    <i class="fas fa-comment me-2"></i>Add Comment
+                                    <i class="fas fa-plus me-2"></i>Update Progress
                                 </button>
-                                <a href="{{ path('task_delete', {'id':task.id}) }}" class="btn btn-outline-danger rounded-pill">
-                                    <i class="fas fa-trash me-2"></i>Delete Task
+                                <a href="{{ path('goal_delete', {'id': goal.id}) }}" class="btn btn-outline-danger rounded-pill" onclick="return confirm('Are you sure you want to delete this goal?')">
+                                    <i class="fas fa-trash me-2"></i>Delete Goal
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Activity Timeline (Optional Enhancement) -->
+                <!-- Activity Timeline -->
                 <div class="row mt-4">
                     <div class="col-12">
                         <div class="timeline-card rounded-4 p-4">
@@ -209,6 +276,7 @@
     <style>
         :root {
             --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
             --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
             --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
@@ -216,6 +284,15 @@
 
         body {
             background: #f8f9fc;
+        }
+
+        /* Custom purple color */
+        .bg-purple {
+            background-color: #6f42c1;
+        }
+
+        .text-purple {
+            color: #6f42c1;
         }
 
         /* Header */
@@ -255,8 +332,22 @@
         .description-content {
             background: #f8f9fc;
             border: 1px solid rgba(0,0,0,0.06);
-            min-height: 200px;
+            min-height: 150px;
             line-height: 1.8;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            background: #f8f9fc;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .progress-bar-container {
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar-fill {
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }
 
         /* Details Card */
@@ -280,16 +371,7 @@
             transform: translateX(4px);
         }
 
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.875rem;
-        }
-
-        .date-icon {
+        .user-avatar, .date-icon {
             width: 36px;
             height: 36px;
             display: flex;
@@ -336,6 +418,17 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
+        .btn-success {
+            background: var(--gradient-success);
+            border: none;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
         .btn-outline-secondary {
             border-color: #e0e0e0;
             color: #6c757d;
@@ -351,6 +444,12 @@
             background: #dc3545;
             border-color: #dc3545;
             color: white;
+        }
+
+        /* Alert */
+        .alert {
+            border-radius: 10px;
+            border: none;
         }
 
         /* Empty State */
@@ -385,6 +484,10 @@
 
             .detail-item {
                 padding: 0.75rem !important;
+            }
+
+            .display-6 {
+                font-size: 1.5rem;
             }
         }
     </style>

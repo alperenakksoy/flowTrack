@@ -86,50 +86,6 @@ class TaskRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function getTaskCompletedOnTime(User $user): array
-    {
-        return $this->createQueryBuilder('t')
-            ->select('t')
-            ->where('t.status = :status')
-            ->andWhere('t.completedAt IS NOT NULL')
-            ->setParameter('status', 'completed')
-            ->andWhere('t.assignedTo = :user')
-            ->setParameter('user', $user)
-            ->andWhere('t.completedAt <= t.dueDate')
-            ->orderBy('t.completedAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    public function getAverageCompletionTime(User $user): ?float
-    {
-        $qb = $this->createQueryBuilder('t');
-
-        $qb->select('AVG(TIMESTAMPDIFF(HOUR, t.createdAt, t.completedAt)) AS avgHours')
-            ->where('t.assignedTo = :user')
-            ->andWhere('t.completedAt IS NOT NULL')
-            ->setParameter('user', $user);
-
-        $result = $qb->getQuery()->getSingleScalarResult();
-
-        return null !== $result ? (float) $result : null;
-    }
-
-    public function getAverageDelayHours(User $user): ?float
-    {
-        $qb = $this->createQueryBuilder('t');
-
-        $qb->select('AVG(TIMESTAMPDIFF(HOUR, t.dueDate, t.completedAt)) AS avgDelayHours')
-            ->where('t.assignedTo = :user')
-            ->andWhere('t.completedAt IS NOT NULL')
-            ->andWhere('t.completedAt > t.dueDate') // Only delayed tasks
-            ->setParameter('user', $user);
-
-        $result = $qb->getQuery()->getSingleScalarResult();
-
-        return null !== $result ? (float) $result : null;
-    }
-
     public function getAveragePriority(User $user): ?float
     {
         $qb = $this->createQueryBuilder('t');
@@ -143,11 +99,158 @@ class TaskRepository extends ServiceEntityRepository
         return null !== $result ? (float) $result : null;
     }
 
-    public function getSuccessRateByPriority(User $user): array
-    {
-        $qb = $this->createQueryBuilder('t');
+    public function getUserCompletedTasksInPeriod(
+        User $user,
+        ?\DateTimeImmutable $startDate = null,
+        ?\DateTimeImmutable $endDate = null,
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->where('t.status = :status')
+            ->andWhere('t.assignedTo = :user')
+            ->andWhere('t.completedAt IS NOT NULL')
+            ->setParameter('status', 'closed')
+            ->setParameter('user', $user);
 
-        return $qb->select('t.priority')
+        if ($startDate) {
+            $qb->andWhere('t.completedAt >= :startDate')
+                ->setParameter('startDate', $startDate);
+        }
+
+        if ($endDate) {
+            $qb->andWhere('t.completedAt <= :endDate')
+                ->setParameter('endDate', $endDate);
+        }
+
+        return $qb->orderBy('t.completedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getOpenTasksInPeriod(
+        User $user,
+        ?\DateTimeImmutable $startDate = null,
+        ?\DateTimeImmutable $endDate = null,
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->where('t.assignedTo = :user')
+            ->andWhere('t.status IN (:statuses)')
+            ->setParameter('user', $user)
+            ->setParameter('statuses', ['open', 'in_progress']);
+
+        if ($startDate) {
+            $qb->andWhere('t.createdAt >= :startDate')
+                ->setParameter('startDate', $startDate);
+        }
+
+        if ($endDate) {
+            $qb->andWhere('t.createdAt <= :endDate')
+                ->setParameter('endDate', $endDate);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function getTaskCompletedOnTime(
+        User $user,
+        ?\DateTimeImmutable $startDate = null,
+        ?\DateTimeImmutable $endDate = null,
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->where('t.status = :status')
+            ->andWhere('t.completedAt IS NOT NULL')
+            ->andWhere('t.assignedTo = :user')
+            ->andWhere('t.completedAt <= t.dueDate')
+            ->setParameter('status', 'closed')
+            ->setParameter('user', $user);
+
+        if ($startDate) {
+            $qb->andWhere('t.completedAt >= :startDate')
+                ->setParameter('startDate', $startDate);
+        }
+
+        if ($endDate) {
+            $qb->andWhere('t.completedAt <= :endDate')
+                ->setParameter('endDate', $endDate);
+        }
+
+        return $qb->orderBy('t.completedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getAverageCompletionTime(User $user, ?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): ?float
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->where('t.assignedTo = :user')
+            ->andWhere('t.completedAt IS NOT NULL')
+            ->setParameter('user', $user);
+
+        if ($startDate) {
+            $qb->andWhere('t.completedAt >= :startDate')->setParameter('startDate', $startDate);
+        }
+
+        if ($endDate) {
+            $qb->andWhere('t.completedAt <= :endDate')->setParameter('endDate', $endDate);
+        }
+
+        $tasks = $qb->getQuery()->getResult();
+
+        if (0 === count($tasks)) {
+            return null;
+        }
+
+        $totalHours = 0;
+        foreach ($tasks as $task) {
+            if ($task->getCreatedAt() && $task->getCompletedAt()) {
+                $interval = $task->getCreatedAt()->diff($task->getCompletedAt());
+                $totalHours += ($interval->days * 24) + $interval->h + ($interval->i / 60);
+            }
+        }
+
+        return $totalHours / count($tasks);
+    }
+
+    public function getAverageDelayHours(User $user, ?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): ?float
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->where('t.assignedTo = :user')
+            ->andWhere('t.completedAt IS NOT NULL')
+            ->andWhere('t.completedAt > t.dueDate')
+            ->setParameter('user', $user);
+
+        if ($startDate) {
+            $qb->andWhere('t.completedAt >= :startDate')->setParameter('startDate', $startDate);
+        }
+
+        if ($endDate) {
+            $qb->andWhere('t.completedAt <= :endDate')->setParameter('endDate', $endDate);
+        }
+
+        $tasks = $qb->getQuery()->getResult();
+
+        if (0 === count($tasks)) {
+            return null;
+        }
+
+        $totalDelayHours = 0;
+        foreach ($tasks as $task) {
+            if ($task->getDueDate() && $task->getCompletedAt()) {
+                $interval = $task->getDueDate()->diff($task->getCompletedAt());
+                $hours = ($interval->days * 24) + $interval->h + ($interval->i / 60);
+                $totalDelayHours += $hours;
+            }
+        }
+
+        return $totalDelayHours / count($tasks);
+    }
+
+    public function getSuccessRateByPriority(
+        User $user,
+        ?\DateTimeImmutable $startDate = null,
+        ?\DateTimeImmutable $endDate = null,
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->select('t.priority')
             ->addSelect('COUNT(t.id) as totalTasks')
             ->addSelect('SUM(CASE WHEN t.status = :completed THEN 1 ELSE 0 END) as completedTasks')
             ->addSelect('SUM(CASE WHEN t.status = :cancelled THEN 1 ELSE 0 END) as cancelledTasks')
@@ -157,24 +260,40 @@ class TaskRepository extends ServiceEntityRepository
             ->groupBy('t.priority')
             ->orderBy('t.priority', 'ASC')
             ->setParameter('user', $user)
-            ->setParameter('completed', 'completed')
+            ->setParameter('completed', 'closed')
             ->setParameter('cancelled', 'cancelled')
-            ->setParameter('inProgress', 'in_progress')
-            ->getQuery()
-            ->getResult();
+            ->setParameter('inProgress', 'in_progress');
+
+        if ($startDate || $endDate) {
+            // Filter by completion date for completed tasks, creation date for others
+            $qb->andWhere('(t.completedAt IS NOT NULL AND t.completedAt BETWEEN :start AND :end) OR (t.completedAt IS NULL AND t.createdAt BETWEEN :start AND :end)')
+                ->setParameter('start', $startDate ?? new \DateTimeImmutable('1970-01-01'))
+                ->setParameter('end', $endDate ?? new \DateTimeImmutable('2099-12-31'));
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
-    public function getHighPrioritySuccessRate(User $user, int $highPriority = 1): ?float
-    {
-        $qb = $this->createQueryBuilder('t');
-
-        $qb->select('COUNT(t.id) as total')
+    public function getHighPrioritySuccessRate(
+        User $user,
+        int $highPriority = 1,
+        ?\DateTimeImmutable $startDate = null,
+        ?\DateTimeImmutable $endDate = null,
+    ): ?float {
+        $qb = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id) as total')
             ->addSelect('SUM(CASE WHEN t.status = :completed THEN 1 ELSE 0 END) as completed')
             ->where('t.assignedTo = :user')
             ->andWhere('t.priority = :priority')
             ->setParameter('user', $user)
             ->setParameter('priority', $highPriority)
-            ->setParameter('completed', 'completed');
+            ->setParameter('completed', 'closed');
+
+        if ($startDate || $endDate) {
+            $qb->andWhere('(t.completedAt IS NOT NULL AND t.completedAt BETWEEN :start AND :end) OR (t.completedAt IS NULL AND t.createdAt BETWEEN :start AND :end)')
+                ->setParameter('start', $startDate ?? new \DateTimeImmutable('1970-01-01'))
+                ->setParameter('end', $endDate ?? new \DateTimeImmutable('2099-12-31'));
+        }
 
         $result = $qb->getQuery()->getSingleResult();
 
@@ -185,47 +304,74 @@ class TaskRepository extends ServiceEntityRepository
         return ($result['completed'] / $result['total']) * 100;
     }
 
-    public function getTaskStatusByPriority(User $user): array
-    {
-        $qb = $this->createQueryBuilder('t');
-
-        return $qb->select('t.priority, t.status')
+    public function getTaskStatusByPriority(
+        User $user,
+        ?\DateTimeImmutable $startDate = null,
+        ?\DateTimeImmutable $endDate = null,
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->select('t.priority, t.status')
             ->addSelect('COUNT(t.id) as count')
             ->where('t.assignedTo = :user')
             ->groupBy('t.priority, t.status')
             ->orderBy('t.priority', 'ASC')
             ->addOrderBy('t.status', 'ASC')
-            ->setParameter('user', $user)
-            ->getQuery()
-            ->getResult();
+            ->setParameter('user', $user);
+
+        if ($startDate || $endDate) {
+            $qb->andWhere('(t.completedAt IS NOT NULL AND t.completedAt BETWEEN :start AND :end) OR (t.completedAt IS NULL AND t.createdAt BETWEEN :start AND :end)')
+                ->setParameter('start', $startDate ?? new \DateTimeImmutable('1970-01-01'))
+                ->setParameter('end', $endDate ?? new \DateTimeImmutable('2099-12-31'));
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
-    public function getCompletionRateByPriority(User $user, int $priority): ?float
-    {
-        $qb = $this->createQueryBuilder('t');
-
-        $total = $qb->select('COUNT(t.id)')
+    public function getCompletionRateByPriority(
+        User $user,
+        int $priority,
+        ?\DateTimeImmutable $startDate = null,
+        ?\DateTimeImmutable $endDate = null,
+    ): ?float {
+        $qb = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
             ->where('t.assignedTo = :user')
             ->andWhere('t.priority = :priority')
             ->setParameter('user', $user)
-            ->setParameter('priority', $priority)
-            ->getQuery()
-            ->getSingleScalarResult();
+            ->setParameter('priority', $priority);
+
+        if ($startDate || $endDate) {
+            $qb->andWhere('(t.completedAt IS NOT NULL AND t.completedAt BETWEEN :start AND :end) OR (t.completedAt IS NULL AND t.createdAt BETWEEN :start AND :end)')
+                ->setParameter('start', $startDate ?? new \DateTimeImmutable('1970-01-01'))
+                ->setParameter('end', $endDate ?? new \DateTimeImmutable('2099-12-31'));
+        }
+
+        $total = $qb->getQuery()->getSingleScalarResult();
 
         if (0 == $total) {
             return null;
         }
 
-        $completed = $this->createQueryBuilder('t')
+        $qb2 = $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->where('t.assignedTo = :user')
             ->andWhere('t.priority = :priority')
             ->andWhere('t.status = :completed')
             ->setParameter('user', $user)
             ->setParameter('priority', $priority)
-            ->setParameter('completed', 'completed')
-            ->getQuery()
-            ->getSingleScalarResult();
+            ->setParameter('completed', 'closed');
+
+        if ($startDate) {
+            $qb2->andWhere('t.completedAt >= :startDate')
+                ->setParameter('startDate', $startDate);
+        }
+
+        if ($endDate) {
+            $qb2->andWhere('t.completedAt <= :endDate')
+                ->setParameter('endDate', $endDate);
+        }
+
+        $completed = $qb2->getQuery()->getSingleScalarResult();
 
         return ($completed / $total) * 100;
     }

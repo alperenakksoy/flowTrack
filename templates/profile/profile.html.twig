@@ -41,11 +41,13 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            {% if user.id is same as (app.user.id)  %}
                             <div>
                                 <a href="#" class="btn btn-primary rounded-pill px-4">
                                     <i class="fas fa-edit me-2"></i>Edit Profile
                                 </a>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -53,9 +55,7 @@
         </div>
 
         <div class="row g-4">
-            <!-- Left Column - Profile Details -->
             <div class="col-lg-4">
-                <!-- Personal Information -->
                 <div class="content-card rounded-4 overflow-hidden mb-4">
                     <div class="card-header-custom p-4 border-bottom">
                         <h5 class="fw-bold mb-0">
@@ -90,7 +90,6 @@
                     </div>
                 </div>
 
-                <!-- Team Information -->
                 {% if user.team %}
                     <div class="content-card rounded-4 overflow-hidden mb-4">
                         <div class="card-header-custom p-4 border-bottom">
@@ -113,6 +112,7 @@
                                     {% endif %}
                                 </p>
                             </div>
+                        </div>
                             <div class="info-item">
                                 <label class="text-muted small d-block mb-1">Team Members</label>
                                 <p class="fw-semibold mb-0">{{ user.team.members|length }} members</p>
@@ -121,29 +121,7 @@
                     </div>
                 {% endif %}
 
-                <!-- Roles & Permissions -->
-                <div class="content-card rounded-4 overflow-hidden">
-                    <div class="card-header-custom p-4 border-bottom">
-                        <h5 class="fw-bold mb-0">
-                            <i class="fas fa-shield-alt me-2 text-warning"></i>Roles & Permissions
-                        </h5>
-                    </div>
-                    <div class="p-4">
-                        <div class="d-flex flex-wrap gap-2">
-                            {% for role in user.roles %}
-                                <span class="badge bg-light text-dark border px-3 py-2">
-                                    <i class="fas fa-check-circle me-1 text-success"></i>
-                                    {{ role|replace({'ROLE_': ''})|title }}
-                                </span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column - Activity & Statistics -->
-            <div class="col-lg-8">
-                <!-- Statistics Cards -->
+                <div class="col-lg-8">
                 <div class="row g-4 mb-4">
                     <div class="col-md-4">
                         <div class="stat-card p-4 rounded-4 h-100">
@@ -186,7 +164,6 @@
                     </div>
                 </div>
 
-                <!-- Recent Tasks -->
                 <div class="content-card rounded-4 overflow-hidden mb-4">
                     <div class="card-header-custom p-4 border-bottom">
                         <div class="d-flex justify-content-between align-items-center">
@@ -242,7 +219,6 @@
                     </div>
                 </div>
 
-                <!-- Recent Goals -->
                 <div class="content-card rounded-4 overflow-hidden">
                     <div class="card-header-custom p-4 border-bottom">
                         <div class="d-flex justify-content-between align-items-center">
@@ -392,7 +368,6 @@
             border-bottom: none;
         }
 
-        /* Progress Bars */
         .progress {
             background: rgba(0,0,0,0.05);
         }
@@ -444,8 +419,7 @@
             padding: 0.375rem 0.75rem;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
+         @media (max-width: 768px) {
             .profile-avatar {
                 width: 120px;
                 height: 120px;

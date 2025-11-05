@@ -20,9 +20,6 @@ class UserController extends AbstractController
     #[IsGranted('ROLE_MANAGER')]
     public function show(User $user): Response
     {
-        if (!$user) {
-            $user = $this->getUser();
-        }
         $userData = $this->dashboardService->getDashboardData($user);
 
         return $this->render('profile/profile.html.twig', [

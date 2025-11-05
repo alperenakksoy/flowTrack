@@ -21,8 +21,6 @@ class TaskService extends AbstractController
             throw $this->createNotFoundException('No Team found');
         }
 
-        $teamTasks = $this->taskRepository->findTeamTasks($team->getId());
-
-        return $teamTasks;
+        return $this->taskRepository->findTeamTasks($team->getId());
     }
 }

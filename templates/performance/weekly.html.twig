@@ -3,7 +3,6 @@
 {% block title %}Weekly Performance Report{% endblock %}
 
 {% block body %}
-    {# Set shortcut variables for easier access #}
     {% set taskMetrics = metrics.taskMetrics %}
     {% set taskBasics = metrics.taskMetrics.basicMetrics %}
     {% set taskTime = metrics.taskMetrics.timeMetrics %}
@@ -11,23 +10,36 @@
     {% set goalMetrics = metrics.goalMetrics %}
 
     <div class="container">
-        {# Header Section #}
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h1>Weekly Performance Report</h1>
-                <p class="text-muted mb-0">Week {{ week }} - {{ year }}</p>
+                {% if isOwnPerformance %}
+                    <p class="text-muted mb-0">Your Performance - Week {{ week }} - {{ year }}</p>
+                {% else %}
+                    <p class="text-muted mb-0">
+                        {{ targetUser.email }}'s Performance - Week {{ week }} - {{ year }}
+                    </p>
+                {% endif %}
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ path('performance_overall') }}" class="btn btn-success">
+                <a href="{{ path('performance_overall', {id: targetUser.id}) }}" class="btn btn-success">
                     Overall Report
                 </a>
-                <a href="{{ path('performance_monthly') }}" class="btn btn-primary">
+                <a href="{{ path('performance_monthly', {id: targetUser.id}) }}" class="btn btn-primary">
                     Monthly Report
                 </a>
             </div>
         </div>
 
-        {# Combined Score Hero Section #}
+        {% if not isOwnPerformance %}
+            <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <div>
+                    Viewing performance report for <strong>{{ targetUser.email }}</strong>
+                </div>
+            </div>
+        {% endif %}
+
         <div class="text-center text-white bg-primary bg-gradient rounded-3 shadow-lg p-5 mb-5">
             <h2 class="fw-light mb-4">Combined Weekly Performance Score</h2>
             <div class="display-1 fw-bold mb-4">{{ combinedScore|number_format(1) }}%</div>
@@ -53,7 +65,6 @@
                 {% endif %}
             </div>
 
-            {# Task & Goal Score Breakdown #}
             <div class="row row-cols-1 row-cols-md-2 g-4 mt-4">
                 <div class="col">
                     <div class="p-3 bg-light bg-opacity-25 rounded-3">
@@ -70,7 +81,6 @@
             </div>
         </div>
 
-        {# Task Overview Cards #}
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-5">
             <div class="col">
                 <div class="card shadow-sm h-100">
@@ -106,10 +116,8 @@
             </div>
         </div>
 
-        {# Performance Breakdown #}
         <div class="row row-cols-1 row-cols-lg-2 g-5 mb-5">
 
-            {# Task Performance Section #}
             <div class="col">
                 <div class="card shadow-sm h-100">
                     <div class="card-body p-4">
@@ -132,7 +140,6 @@
                             </div>
                         </div>
 
-                        {# Progress Bar #}
                         <div class="mt-4">
                             <div class="d-flex justify-content-between">
                                 <span class="small fw-semibold text-primary">Task Completion Progress</span>
@@ -146,7 +153,6 @@
                 </div>
             </div>
 
-            {# Goal Performance Section #}
             <div class="col">
                 <div class="card shadow-sm h-100">
                     <div class="card-body p-4">
@@ -169,7 +175,6 @@
                             </div>
                         </div>
 
-                        {# Progress Bar #}
                         <div class="mt-4">
                             <div class="d-flex justify-content-between">
                                 <span class="small fw-semibold text-success">Goal Completion Progress</span>
@@ -189,7 +194,6 @@
             </div>
         </div>
 
-        {# Time Metrics #}
         <div class="card shadow-sm p-4 mb-5">
             <h3 class="mb-4 d-flex align-items-center">
                 <span class="me-2">⏱️</span> Time Performance
@@ -239,7 +243,6 @@
             </div>
         </div>
 
-        {# Weekly Summary & Recommendations #}
         <div class="card shadow-sm p-4 mb-4">
             <h3 class="mb-4 d-flex align-items-center">
                 <span class="me-2">💼</span> Weekly Summary

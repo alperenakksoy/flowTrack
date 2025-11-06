@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Service\ScoringService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,34 +14,46 @@ class PerformanceReportController extends AbstractController
 {
     public function __construct(
         private readonly ScoringService $scoringService,
+        private readonly UserRepository $userRepository,
     ) {
     }
 
-    #[Route('/performance/weekly', name: 'performance_weekly')]
-    public function weeklyPerformance(Request $request): Response
+    #[Route('/performance/weekly/{id}', name: 'performance_weekly', requirements: ['id' => '\d+'])]
+    public function weeklyPerformance(Request $request, int $id): Response
     {
-        $user = $this->getUser();
+        // Get the logged-in user
+        $loggedInUser = $this->getUser();
 
-        if(!$user){
+        if (!$loggedInUser) {
             return $this->redirectToRoute('app_login');
+        }
+
+        $targetUser = $this->userRepository->find($id);
+
+        if (!$targetUser) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        if ($loggedInUser->getId() !== $targetUser->getId()
+            && !$this->isGranted('ROLE_ADMIN') && $this->isGranted('ROLE_MANAGER')) {
+            throw $this->createAccessDeniedException('You cannot view this user\'s performance');
         }
 
         $week = $request->query->getInt('week', (int) date('W'));
         $year = $request->query->getInt('year', (int) date('Y'));
 
-        /**
-         * @var User $user
-         */
-        // Get combined weekly performance (tasks + goals)
-        $weeklyPerformance = $this->scoringService->getWeeklyPerformanceScore($user, $week, $year);
+        // Get combined weekly performance (tasks + goals) for the target user
+        $weeklyPerformance = $this->scoringService->getWeeklyPerformanceScore($targetUser, $week, $year);
 
         return $this->render('performance/weekly.html.twig', [
+            'targetUser' => $targetUser,
+            'isOwnPerformance' => $loggedInUser->getId() === $targetUser->getId(),
             'week' => $weeklyPerformance['week'],
             'year' => $weeklyPerformance['year'],
             'taskScore' => $weeklyPerformance['taskScore'],
             'goalScore' => $weeklyPerformance['goalScore'],
             'combinedScore' => $weeklyPerformance['combinedScore'],
-            'score' => $weeklyPerformance['combinedScore'], // For consistency with other templates
+            'score' => $weeklyPerformance['combinedScore'],
             'taskMetrics' => $weeklyPerformance['taskMetrics'],
             'goalMetrics' => $weeklyPerformance['goalMetrics'],
             'metrics' => [
@@ -50,27 +63,70 @@ class PerformanceReportController extends AbstractController
         ]);
     }
 
-    #[Route('/performance/monthly', name: 'performance_monthly')]
-    public function monthlyPerformance(): Response
+    #[Route('/performance/weekly', name: 'performance_weekly_own')]
+    public function weeklyPerformanceOwn(Request $request): Response
     {
         $user = $this->getUser();
-        $monthlyScore = $this->scoringService->calculateOverallScore($user, 'month');
-        $monthlyMetrics = $this->scoringService->taskPerformanceScore($user, 'month');
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        // Redirect to the weekly performance route with the user's ID
+        return $this->redirectToRoute('performance_weekly', [
+            'id' => $user->getId(),
+            'week' => $request->query->getInt('week', (int) date('W')),
+            'year' => $request->query->getInt('year', (int) date('Y')),
+        ]);
+    }
+
+    #[Route('/performance/monthly/{id}', name: 'performance_monthly', requirements: ['id' => '\d+'])]
+    public function monthlyPerformance(int $id): Response
+    {
+        $loggedInUser = $this->getUser();
+
+        if (!$loggedInUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $targetUser = $this->userRepository->find($id);
+
+        if (!$targetUser) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        $monthlyScore = $this->scoringService->calculateOverallScore($targetUser, 'month');
+        $monthlyMetrics = $this->scoringService->taskPerformanceScore($targetUser, 'month');
 
         return $this->render('performance/monthly.html.twig', [
+            'targetUser' => $targetUser,
+            'isOwnPerformance' => $loggedInUser->getId() === $targetUser->getId(),
             'score' => $monthlyScore,
             'metrics' => $monthlyMetrics,
         ]);
     }
 
-    #[Route('/performance/overall', name: 'performance_overall')]
-    public function overallPerformance(): Response
+    #[Route('/performance/overall/{id}', name: 'performance_overall', requirements: ['id' => '\d+'])]
+    public function overallPerformance(int $id): Response
     {
-        $user = $this->getUser();
-        $overallScore = $this->scoringService->calculateOverallScore($user, 'all');
-        $overallMetrics = $this->scoringService->taskPerformanceScore($user, 'all');
+        $loggedInUser = $this->getUser();
+
+        if (!$loggedInUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $targetUser = $this->userRepository->find($id);
+
+        if (!$targetUser) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        $overallScore = $this->scoringService->calculateOverallScore($targetUser, 'all');
+        $overallMetrics = $this->scoringService->taskPerformanceScore($targetUser, 'all');
 
         return $this->render('performance/overall.html.twig', [
+            'targetUser' => $targetUser,
+            'isOwnPerformance' => $loggedInUser->getId() === $targetUser->getId(),
             'score' => $overallScore,
             'metrics' => $overallMetrics,
         ]);

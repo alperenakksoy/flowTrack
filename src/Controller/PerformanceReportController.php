@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Service\ScoringService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,9 +21,16 @@ class PerformanceReportController extends AbstractController
     {
         $user = $this->getUser();
 
+        if(!$user){
+            return $this->redirectToRoute('app_login');
+        }
+
         $week = $request->query->getInt('week', (int) date('W'));
         $year = $request->query->getInt('year', (int) date('Y'));
 
+        /**
+         * @var User $user
+         */
         // Get combined weekly performance (tasks + goals)
         $weeklyPerformance = $this->scoringService->getWeeklyPerformanceScore($user, $week, $year);
 

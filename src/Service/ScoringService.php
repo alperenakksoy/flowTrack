@@ -11,7 +11,6 @@ class ScoringService
     public function __construct(
         private readonly TaskRepository $taskRepository,
         private readonly GoalRepository $goalRepository,
-        private readonly DashboardService $dashboardService,
     ) {
     }
 

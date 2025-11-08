@@ -1,0 +1,492 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Overall Performance Report{% endblock %}
+
+{% block body %}
+    {# Set shortcut variables for easier access #}
+    {% set taskBasics = metrics.basicMetrics %}
+    {% set taskTime = metrics.timeMetrics %}
+    {% set taskPriority = metrics.priorityMetrics %}
+
+    <div class="container">
+        {# Header Section #}
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1>Overall Performance Report</h1>
+                {# Show whose performance is being viewed #}
+                {% if isOwnPerformance %}
+                    <p class="text-muted mb-0">Your Complete Performance History</p>
+                {% else %}
+                    <p class="text-muted mb-0">
+                        {{ targetUser.email }}'s Complete Performance History
+                    </p>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ path('performance_weekly', {id: targetUser.id}) }}" class="btn btn-primary">
+                    Weekly Report
+                </a>
+                <a href="{{ path('performance_monthly', {id: targetUser.id}) }}" class="btn btn-info">
+                    Monthly Report
+                </a>
+            </div>
+        </div>
+
+        {# User Info Badge (only show when viewing someone else's performance) #}
+        {% if not isOwnPerformance %}
+            <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:">
+                    <use href="#info-fill"></use>
+                </svg>
+                <div>
+                    Viewing complete performance history for <strong>{{ targetUser.email }}</strong>
+                </div>
+            </div>
+        {% endif %}
+
+        {# Overall Score Hero Section #}
+        <div class="text-center text-white bg-gradient rounded-3 shadow-lg p-5 mb-5" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <h2 class="fw-light mb-4">Overall Performance Score</h2>
+            <div class="display-1 fw-bold mb-4" style="font-size: 6rem;">{{ score|number_format(1) }}%</div>
+
+            {% set scoreLevel = score %}
+            <div class="fs-4 mb-4">
+                {% if scoreLevel >= 90 %}
+                    <span class="badge rounded-pill fs-5 fw-normal bg-light text-dark p-3">
+                        🏆 Top Performer - Exceptional Work!
+                    </span>
+                {% elseif scoreLevel >= 75 %}
+                    <span class="badge rounded-pill fs-5 fw-normal bg-light text-dark p-3">
+                        ⭐ Strong Performer - Great Job!
+                    </span>
+                {% elseif scoreLevel >= 60 %}
+                    <span class="badge rounded-pill fs-5 fw-normal bg-light text-dark p-3">
+                        📊 Steady Performer - Keep Growing!
+                    </span>
+                {% else %}
+                    <span class="badge rounded-pill fs-5 fw-normal bg-light text-dark p-3">
+                        🌱 Developing Performer - Let's Improve!
+                    </span>
+                {% endif %}
+            </div>
+
+            <p class="fs-6 mb-0 opacity-75">Based on all-time task performance metrics</p>
+        </div>
+
+        {# Key Metrics Dashboard #}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-4 mb-5">
+            <div class="col">
+                <div class="card shadow h-100 border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body text-center text-white p-4">
+                        <div class="display-4 mb-3">📊</div>
+                        <div class="small opacity-75 mb-2">Total Tasks</div>
+                        <div class="h1 fw-bold">{{ taskBasics.totalTasksInPeriod }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card shadow h-100 border-0" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+                    <div class="card-body text-center text-white p-4">
+                        <div class="display-4 mb-3">✅</div>
+                        <div class="small opacity-75 mb-2">Completed</div>
+                        <div class="h1 fw-bold">{{ taskBasics.completedTasks }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card shadow h-100 border-0" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                    <div class="card-body text-center text-white p-4">
+                        <div class="display-4 mb-3">⏳</div>
+                        <div class="small opacity-75 mb-2">Pending</div>
+                        <div class="h1 fw-bold">{{ taskBasics.openTasks }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card shadow h-100 border-0" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <div class="card-body text-center text-white p-4">
+                        <div class="display-4 mb-3">📈</div>
+                        <div class="small opacity-75 mb-2">Completion Rate</div>
+                        <div class="h1 fw-bold">{{ taskBasics.taskCompletionRate|number_format(1) }}%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card shadow h-100 border-0" style="background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);">
+                    <div class="card-body text-center text-white p-4">
+                        <div class="display-4 mb-3">⏰</div>
+                        <div class="small opacity-75 mb-2">On-Time Rate</div>
+                        <div class="h1 fw-bold">{{ taskBasics.onTimeCompletionRate|number_format(1) }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Performance Breakdown Section #}
+        <div class="row g-4 mb-5">
+            {# Task Performance Details #}
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h3 class="mb-0 d-flex align-items-center">
+                            <span class="me-2">📋</span> Task Performance Analysis
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        {# Main Progress Indicators #}
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-semibold">Overall Completion Rate</span>
+                                <span class="badge bg-primary fs-6">{{ taskBasics.taskCompletionRate|number_format(1) }}%</span>
+                            </div>
+                            <div class="progress mb-4" style="height: 25px">
+                                <div class="progress-bar bg-primary" role="progressbar"
+                                     style="width: {{ taskBasics.taskCompletionRate }}%"
+                                     aria-valuenow="{{ taskBasics.taskCompletionRate }}"
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    <span class="fw-semibold">{{ taskBasics.taskCompletionRate|number_format(1) }}%</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-semibold">On-Time Delivery Rate</span>
+                                <span class="badge bg-success fs-6">{{ taskBasics.onTimeCompletionRate|number_format(1) }}%</span>
+                            </div>
+                            <div class="progress mb-4" style="height: 25px">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                     style="width: {{ taskBasics.onTimeCompletionRate }}%"
+                                     aria-valuenow="{{ taskBasics.onTimeCompletionRate }}"
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    <span class="fw-semibold">{{ taskBasics.onTimeCompletionRate|number_format(1) }}%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Task Statistics Grid #}
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="p-3 bg-primary-subtle rounded-3 text-center h-100">
+                                    <div class="text-muted small mb-1">Total Tasks</div>
+                                    <div class="display-6 fw-bold text-primary">{{ taskBasics.totalTasksInPeriod }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-success-subtle rounded-3 text-center h-100">
+                                    <div class="text-muted small mb-1">Completed</div>
+                                    <div class="display-6 fw-bold text-success">{{ taskBasics.completedTasks }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-warning-subtle rounded-3 text-center h-100">
+                                    <div class="text-muted small mb-1">Pending</div>
+                                    <div class="display-6 fw-bold text-warning-emphasis">{{ taskBasics.openTasks }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-info-subtle rounded-3 text-center h-100">
+                                    <div class="text-muted small mb-1">On-Time</div>
+                                    <div class="display-6 fw-bold text-info-emphasis">{{ taskBasics.tasksCompletedOnTime }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Performance Rating #}
+                        <div class="mt-4 p-4 {% if taskBasics.taskCompletionRate >= 80 %}bg-success-subtle{% elseif taskBasics.taskCompletionRate >= 60 %}bg-warning-subtle{% else %}bg-danger-subtle{% endif %} rounded-3 text-center">
+                            <div class="fw-semibold mb-2">Performance Rating</div>
+                            <div class="h3 mb-0">
+                                {% if taskBasics.taskCompletionRate >= 90 %}
+                                    ⭐⭐⭐⭐⭐ Outstanding
+                                {% elseif taskBasics.taskCompletionRate >= 80 %}
+                                    ⭐⭐⭐⭐ Excellent
+                                {% elseif taskBasics.taskCompletionRate >= 70 %}
+                                    ⭐⭐⭐ Good
+                                {% elseif taskBasics.taskCompletionRate >= 60 %}
+                                    ⭐⭐ Fair
+                                {% else %}
+                                    ⭐ Needs Improvement
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Time Performance Details #}
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-header bg-success text-white py-3">
+                        <h3 class="mb-0 d-flex align-items-center">
+                            <span class="me-2">⏱️</span> Time Management Analysis
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        {# On-Time Performance #}
+                        <div class="p-4 bg-info-subtle rounded-3 text-center mb-4">
+                            <div class="text-muted mb-2">On-Time Completion Rate</div>
+                            <div class="display-3 fw-bold text-info-emphasis mb-2">
+                                {{ taskBasics.onTimeCompletionRate|number_format(1) }}%
+                            </div>
+                            <div class="text-muted small">
+                                {{ taskBasics.tasksCompletedOnTime }} out of {{ taskBasics.completedTasks }} tasks completed on time
+                            </div>
+                        </div>
+
+                        {# Average Completion Time #}
+                        {% if taskTime.averageCompletionTime is defined and taskTime.averageCompletionTime %}
+                            <div class="p-4 bg-primary-subtle rounded-3 text-center mb-4">
+                                <div class="text-muted mb-2">Average Completion Time</div>
+                                <div class="display-3 fw-bold text-primary mb-2">
+                                    {{ taskTime.averageCompletionTime|number_format(1) }}h
+                                </div>
+                                <div class="text-muted small">per task</div>
+                            </div>
+                        {% endif %}
+
+                        {# Delay Analysis #}
+                        <div class="p-4 {% if taskTime.averageDelayHours is defined and taskTime.averageDelayHours %}bg-danger-subtle{% else %}bg-success-subtle{% endif %} rounded-3 text-center mb-4">
+                            <div class="text-muted mb-2">Average Delay</div>
+                            {% if taskTime.averageDelayHours is defined and taskTime.averageDelayHours %}
+                                <div class="display-3 fw-bold text-danger mb-2">
+                                    {{ taskTime.averageDelayHours|number_format(1) }}h
+                                </div>
+                                <div class="text-muted small">when tasks are delayed</div>
+                            {% else %}
+                                <div class="display-3 fw-bold text-success mb-2">0h</div>
+                                <div class="text-success small">🎉 Perfect timing! No delays recorded!</div>
+                            {% endif %}
+                        </div>
+
+                        {# Time Management Score #}
+                        <div class="p-4 bg-light rounded-3 text-center">
+                            <div class="fw-semibold mb-2">Time Management Grade</div>
+                            <div class="h2 mb-0">
+                                {% if taskBasics.onTimeCompletionRate >= 90 %}
+                                    <span class="text-success">A+ Excellent</span>
+                                {% elseif taskBasics.onTimeCompletionRate >= 80 %}
+                                    <span class="text-success">A Very Good</span>
+                                {% elseif taskBasics.onTimeCompletionRate >= 70 %}
+                                    <span class="text-info">B Good</span>
+                                {% elseif taskBasics.onTimeCompletionRate >= 60 %}
+                                    <span class="text-warning">C Fair</span>
+                                {% else %}
+                                    <span class="text-danger">D Needs Work</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Priority Performance Section #}
+        {% if taskPriority.successRateByPriority is defined and taskPriority.successRateByPriority|length > 0 %}
+            <div class="card shadow-sm mb-5 border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h3 class="mb-0 d-flex align-items-center">
+                        <span class="me-2">🎯</span> Priority-Based Performance Analysis
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4 mb-4">
+                        {% for priorityStat in taskPriority.successRateByPriority %}
+                            <div class="col-lg-4">
+                                <div class="card h-100 border-0 shadow-sm {% if priorityStat.priority == 1 %}border-start border-danger border-5{% elseif priorityStat.priority == 2 %}border-start border-warning border-5{% else %}border-start border-info border-5{% endif %}">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="me-3" style="font-size: 2.5rem;">
+                                                {% if priorityStat.priority == 1 %}
+                                                    🔴
+                                                {% elseif priorityStat.priority == 2 %}
+                                                    🟡
+                                                {% else %}
+                                                    🟢
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0">
+                                                    {% if priorityStat.priority == 1 %}
+                                                        High Priority
+                                                    {% elseif priorityStat.priority == 2 %}
+                                                        Medium Priority
+                                                    {% else %}
+                                                        Low Priority
+                                                    {% endif %}
+                                                </h5>
+                                                <small class="text-muted">Tasks</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-4">
+                                                <div class="text-center p-2 bg-light rounded">
+                                                    <div class="small text-muted">Total</div>
+                                                    <div class="h5 fw-bold mb-0">{{ priorityStat.totalTasks }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="text-center p-2 bg-success-subtle rounded">
+                                                    <div class="small text-muted">Done</div>
+                                                    <div class="h5 fw-bold text-success mb-0">{{ priorityStat.completedTasks }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="text-center p-2 bg-warning-subtle rounded">
+                                                    <div class="small text-muted">Active</div>
+                                                    <div class="h5 fw-bold text-warning-emphasis mb-0">{{ priorityStat.inProgressTasks }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="small fw-semibold">Success Rate</span>
+                                                <span class="small fw-bold">{{ priorityStat.successRate|number_format(1) }}%</span>
+                                            </div>
+                                            <div class="progress" style="height: 20px">
+                                                <div class="progress-bar {% if priorityStat.priority == 1 %}bg-danger{% elseif priorityStat.priority == 2 %}bg-warning{% else %}bg-info{% endif %}"
+                                                     style="width: {{ priorityStat.successRate }}%"
+                                                     role="progressbar"
+                                                     aria-valuenow="{{ priorityStat.successRate }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {# High Priority Highlight #}
+                    {% if taskPriority.highPrioritySuccessRate is defined and taskPriority.highPrioritySuccessRate %}
+                        <div class="p-4 bg-danger-subtle border border-danger rounded-3 text-center">
+                            <h4 class="mb-3">🔴 High Priority Task Success Rate</h4>
+                            <div class="display-2 fw-bold text-danger mb-3">
+                                {{ taskPriority.highPrioritySuccessRate|number_format(1) }}%
+                            </div>
+                            <p class="mb-0 lead">
+                                {% if taskPriority.highPrioritySuccessRate >= 95 %}
+                                    🏆 Outstanding! You excel at handling critical tasks!
+                                {% elseif taskPriority.highPrioritySuccessRate >= 85 %}
+                                    ⭐ Excellent work on high-priority items!
+                                {% elseif taskPriority.highPrioritySuccessRate >= 75 %}
+                                    👍 Good performance on urgent tasks. Keep it up!
+                                {% elseif taskPriority.highPrioritySuccessRate >= 60 %}
+                                    ⚠️ High-priority tasks need more focus.
+                                {% else %}
+                                    📌 Critical tasks require immediate attention!
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        {# Overall Performance Summary #}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h3 class="mb-0 d-flex align-items-center text-white">
+                    <span class="me-2">📊</span> Complete Performance Summary
+                </h3>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    {# Strengths #}
+                    <div class="col-md-6">
+                        <div class="p-4 bg-success-subtle border border-success rounded-3 h-100">
+                            <h4 class="text-success-emphasis d-flex align-items-center mb-4">
+                                <span class="me-2 fs-3">💪</span> Key Strengths
+                            </h4>
+                            <ul class="list-unstyled mb-0">
+                                {% if score >= 85 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-success me-2 fs-5">✓</span>
+                                        <span class="flex-grow-1"><strong>Overall Excellence:</strong> Top-tier performance across all metrics!</span>
+                                    </li>
+                                {% endif %}
+                                {% if taskBasics.completedTasks >= 50 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-success me-2 fs-5">✓</span>
+                                        <span class="flex-grow-1"><strong>High Productivity:</strong> {{ taskBasics.completedTasks }} tasks completed!</span>
+                                    </li>
+                                {% endif %}
+                                {% if taskBasics.taskCompletionRate >= 80 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-success me-2 fs-5">✓</span>
+                                        <span class="flex-grow-1"><strong>Strong Completion Rate:</strong> Consistently finishing assigned work</span>
+                                    </li>
+                                {% endif %}
+                                {% if taskBasics.onTimeCompletionRate >= 85 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-success me-2 fs-5">✓</span>
+                                        <span class="flex-grow-1"><strong>Excellent Time Management:</strong> Reliably meeting deadlines</span>
+                                    </li>
+                                {% endif %}
+                                {% if taskPriority.highPrioritySuccessRate is defined and taskPriority.highPrioritySuccessRate >= 85 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-success me-2 fs-5">✓</span>
+                                        <span class="flex-grow-1"><strong>Priority Focus:</strong> Excellent handling of critical tasks</span>
+                                    </li>
+                                {% endif %}
+                                {% if not (taskTime.averageDelayHours is defined and taskTime.averageDelayHours) %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-success me-2 fs-5">✓</span>
+                                        <span class="flex-grow-1"><strong>Zero Delays:</strong> Perfect punctuality record!</span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    {# Growth Opportunities #}
+                    <div class="col-md-6">
+                        <div class="p-4 bg-primary-subtle border border-primary rounded-3 h-100">
+                            <h4 class="text-primary-emphasis d-flex align-items-center mb-4">
+                                <span class="me-2 fs-3">🚀</span> Growth Opportunities
+                            </h4>
+                            <ul class="list-unstyled mb-0">
+                                {% if taskBasics.openTasks > 10 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-primary me-2 fs-5">→</span>
+                                        <span class="flex-grow-1"><strong>Task Backlog:</strong> Focus on reducing {{ taskBasics.openTasks }} pending tasks</span>
+                                    </li>
+                                {% endif %}
+                                {% if taskBasics.taskCompletionRate < 75 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-primary me-2 fs-5">→</span>
+                                        <span class="flex-grow-1"><strong>Completion Rate:</strong> Target 75%+ completion rate</span>
+                                    </li>
+                                {% endif %}
+                                {% if taskBasics.onTimeCompletionRate < 80 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-primary me-2 fs-5">→</span>
+                                        <span class="flex-grow-1"><strong>Time Management:</strong> Improve deadline adherence</span>
+                                    </li>
+                                {% endif %}
+                                {% if taskPriority.highPrioritySuccessRate is defined and taskPriority.highPrioritySuccessRate < 80 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-primary me-2 fs-5">→</span>
+                                        <span class="flex-grow-1"><strong>Priority Focus:</strong> Better handling of urgent tasks needed</span>
+                                    </li>
+                                {% endif %}
+                                {% if taskTime.averageDelayHours is defined and taskTime.averageDelayHours > 48 %}
+                                    <li class="d-flex mb-3">
+                                        <span class="text-primary me-2 fs-5">→</span>
+                                        <span class="flex-grow-1"><strong>Delay Reduction:</strong> Work on minimizing late completions</span>
+                                    </li>
+                                {% endif %}
+                                <li class="d-flex mb-3">
+                                    <span class="text-primary me-2 fs-5">→</span>
+                                    <span class="flex-grow-1"><strong>Continuous Improvement:</strong> Keep building on your progress!</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

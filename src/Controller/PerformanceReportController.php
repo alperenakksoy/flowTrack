@@ -88,8 +88,7 @@ class PerformanceReportController extends AbstractController
         if (!$loggedInUser) {
             return $this->redirectToRoute('app_login');
         }
-
-        $targetUser = $this->userRepository->find($id);
+       $targetUser = $this->userRepository->find($id);
 
         if (!$targetUser) {
             throw $this->createNotFoundException('User not found');

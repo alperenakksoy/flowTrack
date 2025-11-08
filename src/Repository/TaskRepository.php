@@ -33,7 +33,6 @@ class TaskRepository extends ServiceEntityRepository
             ->getSingleResult();
     }
 
-    // In TaskRepository.php
     public function findTeamTasks($teamId)
     {
         return $this->createQueryBuilder('t')
@@ -46,7 +45,6 @@ class TaskRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // get all completed task datas for the user
     public function getUserCompletedTasks(User $user): array
     {
         return $this->createQueryBuilder('t')
@@ -68,7 +66,7 @@ class TaskRepository extends ServiceEntityRepository
             ->setParameter('status', 'in_progress')
             ->andWhere('t.assignedTo = :user')
             ->setParameter('user', $user)
-            ->orderBy('t.completedAt', 'DESC')
+            ->orderBy('t.updatedAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
@@ -94,6 +92,7 @@ class TaskRepository extends ServiceEntityRepository
             ->where('t.assignedTo = :user')
             ->andWhere('t.completedAt IS NOT NULL')
             ->setParameter('user', $user);
+
         $result = $qb->getQuery()->getSingleScalarResult();
 
         return null !== $result ? (float) $result : null;
@@ -178,19 +177,26 @@ class TaskRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function getAverageCompletionTime(User $user, ?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): ?float
-    {
+    public function getAverageCompletionTime(
+        User $user,
+        ?\DateTimeImmutable $startDate = null,
+        ?\DateTimeImmutable $endDate = null
+    ): ?float {
         $qb = $this->createQueryBuilder('t')
             ->where('t.assignedTo = :user')
             ->andWhere('t.completedAt IS NOT NULL')
-            ->setParameter('user', $user);
+            ->andWhere('t.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', 'closed');
 
         if ($startDate) {
-            $qb->andWhere('t.completedAt >= :startDate')->setParameter('startDate', $startDate);
+            $qb->andWhere('t.completedAt >= :startDate')
+                ->setParameter('startDate', $startDate);
         }
 
         if ($endDate) {
-            $qb->andWhere('t.completedAt <= :endDate')->setParameter('endDate', $endDate);
+            $qb->andWhere('t.completedAt <= :endDate')
+                ->setParameter('endDate', $endDate);
         }
 
         $tasks = $qb->getQuery()->getResult();
@@ -210,20 +216,27 @@ class TaskRepository extends ServiceEntityRepository
         return $totalHours / count($tasks);
     }
 
-    public function getAverageDelayHours(User $user, ?\DateTimeImmutable $startDate = null, ?\DateTimeImmutable $endDate = null): ?float
-    {
+    public function getAverageDelayHours(
+        User $user,
+        ?\DateTimeImmutable $startDate = null,
+        ?\DateTimeImmutable $endDate = null
+    ): ?float {
         $qb = $this->createQueryBuilder('t')
             ->where('t.assignedTo = :user')
             ->andWhere('t.completedAt IS NOT NULL')
             ->andWhere('t.completedAt > t.dueDate')
-            ->setParameter('user', $user);
+            ->andWhere('t.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', 'closed');
 
         if ($startDate) {
-            $qb->andWhere('t.completedAt >= :startDate')->setParameter('startDate', $startDate);
+            $qb->andWhere('t.completedAt >= :startDate')
+                ->setParameter('startDate', $startDate);
         }
 
         if ($endDate) {
-            $qb->andWhere('t.completedAt <= :endDate')->setParameter('endDate', $endDate);
+            $qb->andWhere('t.completedAt <= :endDate')
+                ->setParameter('endDate', $endDate);
         }
 
         $tasks = $qb->getQuery()->getResult();
@@ -265,10 +278,17 @@ class TaskRepository extends ServiceEntityRepository
             ->setParameter('inProgress', 'in_progress');
 
         if ($startDate || $endDate) {
-            // Filter by completion date for completed tasks, creation date for others
-            $qb->andWhere('(t.completedAt IS NOT NULL AND t.completedAt BETWEEN :start AND :end) OR (t.completedAt IS NULL AND t.createdAt BETWEEN :start AND :end)')
-                ->setParameter('start', $startDate ?? new \DateTimeImmutable('1970-01-01'))
-                ->setParameter('end', $endDate ?? new \DateTimeImmutable('2099-12-31'));
+            $start = $startDate ?? new \DateTimeImmutable('1970-01-01');
+            $end = $endDate ?? new \DateTimeImmutable('2099-12-31');
+
+            // Include tasks that were completed in period OR still open/in-progress and created in period
+            $qb->andWhere(
+                '(t.status = :completed AND t.completedAt BETWEEN :start AND :end) OR
+                 (t.status IN (:activeStatuses) AND t.createdAt BETWEEN :start AND :end)'
+            )
+                ->setParameter('start', $start)
+                ->setParameter('end', $end)
+                ->setParameter('activeStatuses', ['open', 'in_progress']);
         }
 
         return $qb->getQuery()->getResult();
@@ -290,9 +310,16 @@ class TaskRepository extends ServiceEntityRepository
             ->setParameter('completed', 'closed');
 
         if ($startDate || $endDate) {
-            $qb->andWhere('(t.completedAt IS NOT NULL AND t.completedAt BETWEEN :start AND :end) OR (t.completedAt IS NULL AND t.createdAt BETWEEN :start AND :end)')
-                ->setParameter('start', $startDate ?? new \DateTimeImmutable('1970-01-01'))
-                ->setParameter('end', $endDate ?? new \DateTimeImmutable('2099-12-31'));
+            $start = $startDate ?? new \DateTimeImmutable('1970-01-01');
+            $end = $endDate ?? new \DateTimeImmutable('2099-12-31');
+
+            $qb->andWhere(
+                '(t.status = :completed AND t.completedAt BETWEEN :start AND :end) OR
+                 (t.status IN (:activeStatuses) AND t.createdAt BETWEEN :start AND :end)'
+            )
+                ->setParameter('start', $start)
+                ->setParameter('end', $end)
+                ->setParameter('activeStatuses', ['open', 'in_progress']);
         }
 
         $result = $qb->getQuery()->getSingleResult();
@@ -319,9 +346,17 @@ class TaskRepository extends ServiceEntityRepository
             ->setParameter('user', $user);
 
         if ($startDate || $endDate) {
-            $qb->andWhere('(t.completedAt IS NOT NULL AND t.completedAt BETWEEN :start AND :end) OR (t.completedAt IS NULL AND t.createdAt BETWEEN :start AND :end)')
-                ->setParameter('start', $startDate ?? new \DateTimeImmutable('1970-01-01'))
-                ->setParameter('end', $endDate ?? new \DateTimeImmutable('2099-12-31'));
+            $start = $startDate ?? new \DateTimeImmutable('1970-01-01');
+            $end = $endDate ?? new \DateTimeImmutable('2099-12-31');
+
+            $qb->andWhere(
+                '(t.status = :completed AND t.completedAt BETWEEN :start AND :end) OR
+                 (t.status IN (:activeStatuses) AND t.createdAt BETWEEN :start AND :end)'
+            )
+                ->setParameter('start', $start)
+                ->setParameter('end', $end)
+                ->setParameter('completed', 'closed')
+                ->setParameter('activeStatuses', ['open', 'in_progress']);
         }
 
         return $qb->getQuery()->getResult();
@@ -333,6 +368,7 @@ class TaskRepository extends ServiceEntityRepository
         ?\DateTimeImmutable $startDate = null,
         ?\DateTimeImmutable $endDate = null,
     ): ?float {
+        // Get total tasks of this priority in period
         $qb = $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->where('t.assignedTo = :user')
@@ -341,9 +377,17 @@ class TaskRepository extends ServiceEntityRepository
             ->setParameter('priority', $priority);
 
         if ($startDate || $endDate) {
-            $qb->andWhere('(t.completedAt IS NOT NULL AND t.completedAt BETWEEN :start AND :end) OR (t.completedAt IS NULL AND t.createdAt BETWEEN :start AND :end)')
-                ->setParameter('start', $startDate ?? new \DateTimeImmutable('1970-01-01'))
-                ->setParameter('end', $endDate ?? new \DateTimeImmutable('2099-12-31'));
+            $start = $startDate ?? new \DateTimeImmutable('1970-01-01');
+            $end = $endDate ?? new \DateTimeImmutable('2099-12-31');
+
+            $qb->andWhere(
+                '(t.status = :completed AND t.completedAt BETWEEN :start AND :end) OR
+                 (t.status IN (:activeStatuses) AND t.createdAt BETWEEN :start AND :end)'
+            )
+                ->setParameter('start', $start)
+                ->setParameter('end', $end)
+                ->setParameter('completed', 'closed')
+                ->setParameter('activeStatuses', ['open', 'in_progress']);
         }
 
         $total = $qb->getQuery()->getSingleScalarResult();
@@ -352,6 +396,7 @@ class TaskRepository extends ServiceEntityRepository
             return null;
         }
 
+        // Get completed tasks of this priority in period
         $qb2 = $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->where('t.assignedTo = :user')

@@ -31,10 +31,6 @@ class ScoringService
         // Set date range based on period
         $dateRange = $this->getDateRange($period, $week, $year);
 
-        // Get dashboard data (all time)
-        $dashboardData = $this->dashboardService->getDashboardData($employee);
-        $taskData = $dashboardData['taskStatistics'];
-
         // Get time-filtered metrics
         $taskCompletedOnTime = $this->taskRepository->getTaskCompletedOnTime(
             $employee,
@@ -53,8 +49,24 @@ class ScoringService
 
         $completedCount = count($completedTasksInPeriod);
 
+        // Get open/in-progress tasks in period
+        $openTasksInPeriod = $this->taskRepository->getOpenTasksInPeriod(
+            $employee,
+            $dateRange['start'],
+            $dateRange['end']
+        );
+        $countOpenTasksInPeriod = count($openTasksInPeriod);
+
+        // Total tasks in period
+        $totalTasksInPeriod = $completedCount + $countOpenTasksInPeriod;
+
+        // Calculate rates
+        $taskCompletionRate = $totalTasksInPeriod > 0
+            ? round(($completedCount / $totalTasksInPeriod) * 100, 2)
+            : 0;
+
         $onTimeCompletionRate = $completedCount > 0
-            ? ($countTaskCompletedOnTime / $completedCount) * 100
+            ? round(($countTaskCompletedOnTime / $completedCount) * 100, 2)
             : 0;
 
         // Time metrics for period
@@ -91,16 +103,25 @@ class ScoringService
         );
 
         $priorityCompletionRates = [
-            1 => $this->taskRepository->getCompletionRateByPriority($employee, 1, $dateRange['start'], $dateRange['end']),
-            2 => $this->taskRepository->getCompletionRateByPriority($employee, 2, $dateRange['start'], $dateRange['end']),
-            3 => $this->taskRepository->getCompletionRateByPriority($employee, 3, $dateRange['start'], $dateRange['end']),
+            1 => $this->taskRepository->getCompletionRateByPriority(
+                $employee,
+                1,
+                $dateRange['start'],
+                $dateRange['end']
+            ),
+            2 => $this->taskRepository->getCompletionRateByPriority(
+                $employee,
+                2,
+                $dateRange['start'],
+                $dateRange['end']
+            ),
+            3 => $this->taskRepository->getCompletionRateByPriority(
+                $employee,
+                3,
+                $dateRange['start'],
+                $dateRange['end']
+            ),
         ];
-        $openTasksInPeriod = $this->taskRepository->getOpenTasksInPeriod(
-            $employee,
-            $dateRange['start'],
-            $dateRange['end']
-        );
-        $countOpenTasksInPeriod = count($openTasksInPeriod);
 
         return [
             'period' => [
@@ -111,10 +132,11 @@ class ScoringService
                 'endDate' => $dateRange['end']?->format('Y-m-d'),
             ],
             'basicMetrics' => [
-                'totalTasksInPeriod' => $completedCount + $countOpenTasksInPeriod,
+                'totalTasksInPeriod' => $totalTasksInPeriod,
                 'completedTasks' => $completedCount,
-                'taskCompletionRate' => $completedCount > 0 ? ($completedCount / ($completedCount + count($this->taskRepository->getOpenTasksInPeriod($employee, $dateRange['start'], $dateRange['end'])))) * 100 : 0,
-                'onTimeCompletionRate' => round($onTimeCompletionRate, 2),
+                'openTasks' => $countOpenTasksInPeriod,
+                'taskCompletionRate' => $taskCompletionRate,
+                'onTimeCompletionRate' => $onTimeCompletionRate,
                 'tasksCompletedOnTime' => $countTaskCompletedOnTime,
             ],
             'timeMetrics' => [
@@ -129,7 +151,10 @@ class ScoringService
             ],
         ];
     }
-     // Calculate date range based on period type.
+
+    /**
+     * Calculate date range based on period type.
+     */
     private function getDateRange(string $period, ?int $week, ?int $year): array
     {
         $now = new \DateTimeImmutable();
@@ -148,7 +173,7 @@ class ScoringService
     {
         $dto = new \DateTime();
         $dto->setISODate($year, $week);
-        $start = \DateTimeImmutable::createFromMutable($dto->modify('monday this week'));
+        $start = \DateTimeImmutable::createFromMutable($dto->modify('monday this week 00:00:00'));
         $end = \DateTimeImmutable::createFromMutable($dto->modify('sunday this week 23:59:59'));
 
         return ['start' => $start, 'end' => $end];
@@ -267,7 +292,7 @@ class ScoringService
         ]);
 
         if (0 === count($goals)) {
-            return 0; // No goal set
+            return 0; // No goals set
         }
 
         $totalProgress = 0;

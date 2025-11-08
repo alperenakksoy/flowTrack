@@ -3,6 +3,8 @@
 {% block title %}Weekly Performance Report{% endblock %}
 
 {% block body %}
+
+    {# Set shortcut variables for easier access #}
     {% set taskMetrics = metrics.taskMetrics %}
     {% set taskBasics = metrics.taskMetrics.basicMetrics %}
     {% set taskTime = metrics.taskMetrics.timeMetrics %}
@@ -10,9 +12,11 @@
     {% set goalMetrics = metrics.goalMetrics %}
 
     <div class="container">
+        {# Header Section #}
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h1>Weekly Performance Report</h1>
+                {# Show whose performance is being viewed #}
                 {% if isOwnPerformance %}
                     <p class="text-muted mb-0">Your Performance - Week {{ week }} - {{ year }}</p>
                 {% else %}
@@ -31,15 +35,19 @@
             </div>
         </div>
 
+        {# User Info Badge (only show when viewing someone else's performance) #}
         {% if not isOwnPerformance %}
             <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
-                <i class="bi bi-info-circle-fill me-2"></i>
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:">
+                    <use xlink:href="#info-fill"/>
+                </svg>
                 <div>
                     Viewing performance report for <strong>{{ targetUser.email }}</strong>
                 </div>
             </div>
         {% endif %}
 
+        {# Combined Score Hero Section #}
         <div class="text-center text-white bg-primary bg-gradient rounded-3 shadow-lg p-5 mb-5">
             <h2 class="fw-light mb-4">Combined Weekly Performance Score</h2>
             <div class="display-1 fw-bold mb-4">{{ combinedScore|number_format(1) }}%</div>
@@ -65,6 +73,7 @@
                 {% endif %}
             </div>
 
+            {# Task & Goal Score Breakdown #}
             <div class="row row-cols-1 row-cols-md-2 g-4 mt-4">
                 <div class="col">
                     <div class="p-3 bg-light bg-opacity-25 rounded-3">
@@ -81,7 +90,8 @@
             </div>
         </div>
 
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-5">
+        {# Task Overview Cards - NOW INCLUDES IN-PROGRESS #}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-4 mb-5">
             <div class="col">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
@@ -95,6 +105,14 @@
                     <div class="card-body">
                         <div class="text-muted small mb-2">Completed</div>
                         <div class="h1 fw-bold text-success">{{ taskBasics.completedTasks }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card shadow-sm h-100 border-warning">
+                    <div class="card-body">
+                        <div class="text-muted small mb-2">Open/In Progress</div>
+                        <div class="h1 fw-bold text-warning">{{ taskBasics.openTasks }}</div>
                     </div>
                 </div>
             </div>
@@ -116,8 +134,10 @@
             </div>
         </div>
 
+        {# Performance Breakdown #}
         <div class="row row-cols-1 row-cols-lg-2 g-5 mb-5">
 
+            {# Task Performance Section #}
             <div class="col">
                 <div class="card shadow-sm h-100">
                     <div class="card-body p-4">
@@ -134,12 +154,17 @@
                                 <span class="fw-semibold">Completed</span>
                                 <span class="h4 fw-bold text-success mb-0">{{ taskBasics.completedTasks }}</span>
                             </div>
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-warning-subtle rounded mb-3">
+                                <span class="fw-semibold">Open/In Progress</span>
+                                <span class="h4 fw-bold text-warning-emphasis mb-0">{{ taskBasics.openTasks }}</span>
+                            </div>
                             <div class="d-flex justify-content-between align-items-center p-3 bg-info-subtle rounded">
                                 <span class="fw-semibold">On-Time</span>
                                 <span class="h4 fw-bold text-info mb-0">{{ taskBasics.tasksCompletedOnTime }}</span>
                             </div>
                         </div>
 
+                        {# Progress Bar #}
                         <div class="mt-4">
                             <div class="d-flex justify-content-between">
                                 <span class="small fw-semibold text-primary">Task Completion Progress</span>
@@ -153,6 +178,7 @@
                 </div>
             </div>
 
+            {# Goal Performance Section #}
             <div class="col">
                 <div class="card shadow-sm h-100">
                     <div class="card-body p-4">
@@ -175,6 +201,7 @@
                             </div>
                         </div>
 
+                        {# Progress Bar #}
                         <div class="mt-4">
                             <div class="d-flex justify-content-between">
                                 <span class="small fw-semibold text-success">Goal Completion Progress</span>
@@ -194,6 +221,7 @@
             </div>
         </div>
 
+        {# Time Metrics #}
         <div class="card shadow-sm p-4 mb-5">
             <h3 class="mb-4 d-flex align-items-center">
                 <span class="me-2">⏱️</span> Time Performance
@@ -243,6 +271,7 @@
             </div>
         </div>
 
+        {# Weekly Summary & Recommendations #}
         <div class="card shadow-sm p-4 mb-4">
             <h3 class="mb-4 d-flex align-items-center">
                 <span class="me-2">💼</span> Weekly Summary
@@ -279,6 +308,12 @@
                                     <span>Excellent time management this week</span>
                                 </li>
                             {% endif %}
+                            {% if taskBasics.openTasks == 0 %}
+                                <li class="d-flex mb-2">
+                                    <span class="text-success me-2">•</span>
+                                    <span>All tasks completed - no pending work!</span>
+                                </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
@@ -289,6 +324,12 @@
                             <span class="me-2">🎯</span> Focus for Next Week
                         </h4>
                         <ul class="list-unstyled mb-0">
+                            {% if taskBasics.openTasks > 0 %}
+                                <li class="d-flex mb-2">
+                                    <span class="text-primary me-2">•</span>
+                                    <span>Complete {{ taskBasics.openTasks }} pending task(s)</span>
+                                </li>
+                            {% endif %}
                             {% if taskBasics.taskCompletionRate < 75 %}
                                 <li class="d-flex mb-2">
                                     <span class="text-primary me-2">•</span>

@@ -39,6 +39,9 @@ class TaskController extends AbstractController
     {
         /** @var User $manager */
         $manager = $this->getUser();
+        $isNewTask = !$task->getId();
+        $originalStatus = $task->getStatus();
+        $originalAssignedTo = $task->getAssignedTo();
 
         if ($task->getId()) {
             $this->denyAccessUnlessGranted(Permissions::EDIT, $task);
@@ -55,15 +58,27 @@ class TaskController extends AbstractController
                 $task->setCreatedBy($this->getUser());
             }
             $task->setUpdatedAt(new \DateTimeImmutable());
+
             $em->persist($task);
             $em->flush();
 
-            if (!$task->getId()) {
+            if ($isNewTask && $task->getAssignedTo()) {
                 $this->notificationService->sendTaskAssignedEmail($task, $task->getAssignedTo());
             }
-            if ('closed' === $form->get('status')->getData()) {
+
+            if (!$isNewTask && $originalAssignedTo && $task->getAssignedTo()
+                && $originalAssignedTo->getId() !== $task->getAssignedTo()->getId()) {
+                $this->notificationService->sendTaskAssignedEmail($task, $task->getAssignedTo());
+            }
+
+            if ('closed' === $task->getStatus() && 'closed' !== $originalStatus && $task->getCreatedBy()) {
+                $task->setCompletedAt(new \DateTimeImmutable());
+                $em->flush();
+
                 $this->notificationService->sendTaskCompletedEmail($task, $task->getCreatedBy());
             }
+
+            $this->addFlash('success', 'Task saved successfully!');
 
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }

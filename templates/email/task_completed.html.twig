@@ -1,7 +1,7 @@
 <h2>Congratulations {{ user.firstName }} {{ user.lastName }} !!</h2>
 <p>You have completed your task</p>
 <p><strong>Completed Date:</strong> {{ task.completedAt|date('d-m-Y') }}</p>
-<p><strong>Completed by:</strong> {{ completedBy}}</p>
+<p><strong>Completed by:</strong> {{ completedBy.firstName }} {{ completedBy.lastName }}</p>
 
-<a href="{{ path('task_show',{id: task.id}) }}">Click here to see the details</a>
+<a href="{{ url('task_show',{id: task.id}) }}">Click here to see the details</a>
 

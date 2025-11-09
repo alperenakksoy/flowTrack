@@ -4,14 +4,14 @@
     <p> Description: {{ goal.description|raw }}</p>
 {% endif %}
 
-{% if goal.targetValue is defined and  goal unit is defined and goal %}
+{% if goal.targetValue is defined and  goal.unit is defined and goal %}
     <p> target: {{ goal.targetValue }} | Unit: <strong> {{ goal.unit }} </strong></p>
 {% endif %}
 
 <p><strong>Week:</strong> {{ goal.week }}</p>
 <p><strong>Year:</strong> {{ goal.year }}</p>
 
-<a href="{{ path('goal_show', {id: goal.id}) }}" >Click to view the goal</a>
+<a href="{{ url('goal_show', {id: goal.id}) }}" >Click to view the goal</a>
 
 
 

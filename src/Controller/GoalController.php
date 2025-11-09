@@ -17,6 +17,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class GoalController extends AbstractController
 {
+    private NotificationService $notificationService;
+
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;

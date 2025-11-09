@@ -1,9 +1,5 @@
 <h2>Hello {{ user.firstName }} {{ user.lastName }}</h2>
 
-{% if goal.title is defined and goal %}
-    <p><strong>Task:</strong> {{ goal.title }}</p>
-{% endif %}
-
 {% if goal.description is defined and goal %}
     <p> Description: {{ goal.description|raw }}</p>
 {% endif %}

@@ -15,7 +15,6 @@ class NotificationService
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly Environment $twig,
-        #[Autowire(env: 'MAIL_SENDER')] private readonly string $mailSender,
         #[Autowire(env: 'MAIL_FROM')] private readonly string $mailFrom,
     ) {
     }

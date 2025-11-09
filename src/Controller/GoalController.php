@@ -6,6 +6,7 @@ use App\Entity\Goal;
 use App\Entity\User;
 use App\Form\GoalType;
 use App\Security\Permissions;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -16,10 +17,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class GoalController extends AbstractController
 {
-    // public function index()
-    // {
-    //
-    // }
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     #[Route('/goal/create', name: 'goal_create')]
     #[IsGranted('ROLE_MANAGER')]
     public function create(EntityManagerInterface $em, Request $request): Response
@@ -57,6 +59,10 @@ class GoalController extends AbstractController
             $goal->setUpdatedAt(new \DateTimeImmutable());
             $em->persist($goal);
             $em->flush();
+
+            if (!$goal->getId()) {
+                $this->notificationService->sendGoalAssignedEmail($goal, $goal->getEmployee());
+            }
 
             return $this->redirectToRoute('goal_show', ['id' => $goal->getId()]);
         }

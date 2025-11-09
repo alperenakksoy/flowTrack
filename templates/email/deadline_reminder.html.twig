@@ -1,0 +1,25 @@
+<h2><strong>URGENT TASK DEADLINE </strong></h2>
+
+<h2>Hello {{ user.firstName }} {{ user.lastName }}</h2>
+
+{% if task.title is defined and task %}
+    <p><strong>Task:</strong> {{ task.title }}</p>
+{% endif %}
+
+<p><strong>Due Date:</strong> {{ task.dueDate|date('d-m-Y') }} <strong>Due in 24 hours!</strong></p>
+
+
+{% if task.description is defined and task %}
+    <p> Description: {{ task.description|raw }}</p>
+{% endif %}
+
+<p><strong>Priority:</strong> {{ task.priority }}</p>
+
+<a href="{{ path('task_show', {id: task.id}) }}" >Click to view the task</a>
+
+<p>Please you to complete your task before deadline</p>
+
+
+
+
+

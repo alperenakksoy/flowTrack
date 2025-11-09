@@ -6,6 +6,7 @@ use App\Entity\Task;
 use App\Entity\User;
 use App\Form\TaskType;
 use App\Security\Permissions;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -16,6 +17,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class TaskController extends AbstractController
 {
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     #[Route('/task/create', name: 'task_create', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_MANAGER')]
     public function create(EntityManagerInterface $em, Request $request): Response
@@ -49,6 +55,13 @@ class TaskController extends AbstractController
             $task->setUpdatedAt(new \DateTimeImmutable());
             $em->persist($task);
             $em->flush();
+
+            if (!$task->getId()) {
+                $this->notificationService->sendTaskAssignedEmail($task, $task->getAssignedTo());
+            }
+            if ('completed' === $form->get('status')->getData()) {
+                $this->notificationService->sendTaskCompletedEmail($task, $task->getCreatedBy());
+            }
 
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }

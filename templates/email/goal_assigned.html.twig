@@ -1,0 +1,23 @@
+<h2>Hello {{ user.firstName }} {{ user.lastName }}</h2>
+
+{% if goal.title is defined and goal %}
+    <p><strong>Task:</strong> {{ goal.title }}</p>
+{% endif %}
+
+{% if goal.description is defined and goal %}
+    <p> Description: {{ goal.description|raw }}</p>
+{% endif %}
+
+{% if goal.targetValue is defined and  goal unit is defined and goal %}
+    <p> target: {{ goal.targetValue }} | Unit: <strong> {{ goal.unit }} </strong></p>
+{% endif %}
+
+<p><strong>Week:</strong> {{ goal.week }}</p>
+<p><strong>Year:</strong> {{ goal.year }}</p>
+
+<a href="{{ path('goal_show', {id: goal.id}) }}" >Click to view the goal</a>
+
+
+
+
+

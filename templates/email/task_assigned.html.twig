@@ -1,0 +1,20 @@
+<h2>Hello {{ user.firstName }} {{ user.lastName }}</h2>
+<p>New task assigned to you, see below for details</p>
+
+{% if task.title is defined and task %}
+    <p><strong>Task:</strong> {{ task.title }}</p>
+{% endif %}
+
+{% if task.description is defined and task %}
+    <p> Description: {{ task.description|raw }}</p>
+{% endif %}
+
+<p><strong>Due Date:</strong> {{ task.dueDate|date('d-m-Y') }}</p>
+<p><strong>Priority:</strong> {{ task.priority }}</p>
+
+<a href="{{ path('task_show', {id: task.id}) }}" >Click to view the task</a>
+
+
+
+
+

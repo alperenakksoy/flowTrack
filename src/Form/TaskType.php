@@ -37,9 +37,10 @@ class TaskType extends AbstractType
         ->add('status', ChoiceType::class, [
             'label' => 'Status',
             'choices' => [
-                'In progress' => 'In progress',
-                'Completed' => 'Completed',
-                'Cancelled' => 'Cancelled',
+                'Open' => 'open',
+                'In progress' => 'in_progress',
+                'Completed' => 'closed',
+                'Cancelled' => 'cancelled',
             ],
         ])
         ->add('assignedTo', EntityType::class, [

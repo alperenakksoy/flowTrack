@@ -22,7 +22,7 @@ class Task
     private ?string $description = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $status = 'pending'; // pending, in_progress, completed, cancelled
+    private ?string $status = 'open'; // open, in_progress, closed, cancelled
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'assignedTasks')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -50,7 +50,7 @@ class Task
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->status = 'pending';
+        $this->status = 'open';
     }
 
     public function getId(): ?int

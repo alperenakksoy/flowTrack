@@ -61,7 +61,7 @@ class TaskController extends AbstractController
             if (!$task->getId()) {
                 $this->notificationService->sendTaskAssignedEmail($task, $task->getAssignedTo());
             }
-            if ('completed' === $form->get('status')->getData()) {
+            if ('closed' === $form->get('status')->getData()) {
                 $this->notificationService->sendTaskCompletedEmail($task, $task->getCreatedBy());
             }
 

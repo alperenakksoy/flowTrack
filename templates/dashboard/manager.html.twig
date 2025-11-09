@@ -203,7 +203,7 @@
                                                             {% set status_class = 'bg-danger' %}
                                                         {% elseif task.status == 'in_progress' %}
                                                             {% set status_class = 'bg-primary' %}
-                                                        {% elseif task.status == 'completed' %}
+                                                        {% elseif task.status == 'closed' %}
                                                             {% set status_class = 'bg-success' %}
                                                         {% endif %}
                                                         <span class="badge {{ status_class }} rounded-pill">

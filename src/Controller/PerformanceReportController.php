@@ -41,6 +41,7 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/weekly/{id}', name: 'performance_weekly', requirements: ['id' => '\d+'])]
     public function weeklyPerformance(Request $request, int $id): Response
     {
+        /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
         if (!$loggedInUser) {
@@ -99,6 +100,7 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/monthly/{id}', name: 'performance_monthly', requirements: ['id' => '\d+'])]
     public function monthlyPerformance(int $id): Response
     {
+        /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
         if (!$loggedInUser) {
@@ -128,6 +130,7 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/overall/{id}', name: 'performance_overall', requirements: ['id' => '\d+'])]
     public function overallPerformance(int $id): Response
     {
+        /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
         if (!$loggedInUser) {

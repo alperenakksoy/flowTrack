@@ -18,10 +18,29 @@ class PerformanceReportController extends AbstractController
     ) {
     }
 
+    private function canViewPerformance(User $loggedInUser, User $targetUser): bool
+    {
+        if ($loggedInUser->getId() === $targetUser->getId()) {
+            return true;
+        }
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+
+        if ($this->isGranted('ROLE_MANAGER')) {
+            if (null !== $loggedInUser->getTeam()
+                && null !== $targetUser->getTeam()
+                && $loggedInUser->getTeam()->getId() === $targetUser->getTeam()->getId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
     #[Route('/performance/weekly/{id}', name: 'performance_weekly', requirements: ['id' => '\d+'])]
     public function weeklyPerformance(Request $request, int $id): Response
     {
-        // Get the logged-in user
         $loggedInUser = $this->getUser();
 
         if (!$loggedInUser) {
@@ -34,15 +53,13 @@ class PerformanceReportController extends AbstractController
             throw $this->createNotFoundException('User not found');
         }
 
-        if ($loggedInUser->getId() !== $targetUser->getId()
-            && !$this->isGranted('ROLE_ADMIN') && $this->isGranted('ROLE_MANAGER')) {
+        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
             throw $this->createAccessDeniedException('You cannot view this user\'s performance');
         }
 
         $week = $request->query->getInt('week', (int) date('W'));
         $year = $request->query->getInt('year', (int) date('Y'));
 
-        // Get combined weekly performance (tasks + goals) for the target user
         $weeklyPerformance = $this->scoringService->getWeeklyPerformanceScore($targetUser, $week, $year);
 
         return $this->render('performance/weekly.html.twig', [
@@ -72,7 +89,6 @@ class PerformanceReportController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // Redirect to the weekly performance route with the user's ID
         return $this->redirectToRoute('performance_weekly', [
             'id' => $user->getId(),
             'week' => $request->query->getInt('week', (int) date('W')),
@@ -88,10 +104,15 @@ class PerformanceReportController extends AbstractController
         if (!$loggedInUser) {
             return $this->redirectToRoute('app_login');
         }
-       $targetUser = $this->userRepository->find($id);
+
+        $targetUser = $this->userRepository->find($id);
 
         if (!$targetUser) {
             throw $this->createNotFoundException('User not found');
+        }
+
+        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
+            throw $this->createAccessDeniedException('You cannot view this user\'s performance');
         }
 
         $monthlyScore = $this->scoringService->calculateOverallScore($targetUser, 'month');
@@ -104,7 +125,6 @@ class PerformanceReportController extends AbstractController
             'metrics' => $monthlyMetrics,
         ]);
     }
-
     #[Route('/performance/overall/{id}', name: 'performance_overall', requirements: ['id' => '\d+'])]
     public function overallPerformance(int $id): Response
     {
@@ -118,6 +138,10 @@ class PerformanceReportController extends AbstractController
 
         if (!$targetUser) {
             throw $this->createNotFoundException('User not found');
+        }
+
+        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
+            throw $this->createAccessDeniedException('You cannot view this user\'s performance');
         }
 
         $overallScore = $this->scoringService->calculateOverallScore($targetUser, 'all');

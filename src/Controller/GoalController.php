@@ -91,7 +91,6 @@ class GoalController extends AbstractController
         if (!$goal) {
             throw $this->createNotFoundException('Goal not found');
         }
-        dump($goal->getUpdatedAt());
 
         return $this->render('goal/show.html.twig', [
             'goal' => $goal,

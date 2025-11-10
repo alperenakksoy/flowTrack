@@ -7,13 +7,11 @@ use App\Entity\User;
 use App\Security\Permissions;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class GoalVoter extends Voter
 {
     private const array SUPPORTED_ATTRIBUTES = [
-        Permissions::LIST,
         Permissions::VIEW,
         Permissions::CREATE,
         Permissions::EDIT,
@@ -29,15 +27,14 @@ class GoalVoter extends Voter
         if (!in_array($attribute, self::SUPPORTED_ATTRIBUTES)) {
             return false;
         }
-
-        if (!$subject instanceof Goal && Goal::class !== $subject) {
-            return false;
+        if (!$subject instanceof Goal) {
+            return Goal::class === $subject && Permissions::CREATE === $attribute;
         }
 
         return true;
     }
 
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         /** @var ?User $user */
         $user = $token->getUser();
@@ -46,12 +43,19 @@ class GoalVoter extends Voter
             return false;
         }
 
+        if ($this->security->isGranted('ROLE_MANAGER')) {
+            return true;
+        }
+
+        /** @var ?Goal $goal */
+        $goal = $subject instanceof Goal ? $subject : null;
+
         return match ($attribute) {
-            Permissions::LIST, Permissions::VIEW => true,
-            Permissions::CREATE => $this->security->isGranted('ROLE_MANAGER'),
-            Permissions::EDIT => $subject instanceof Goal && ($subject->getCreatedBy()?->getId() === $user->getId()
-                    || $this->security->isGranted('ROLE_MANAGER')),
-            Permissions::DELETE => $subject instanceof Goal && $this->security->isGranted('ROLE_MANAGER'),
+            Permissions::VIEW => $goal && ($goal->getEmployee()?->getId() === $user->getId()
+                    || $goal->getCreatedBy()?->getId() === $user->getId()),
+
+            Permissions::CREATE, Permissions::EDIT, Permissions::DELETE => false,
+
             default => false,
         };
     }

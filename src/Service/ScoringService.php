@@ -341,6 +341,8 @@ class ScoringService
             if ($goal->getTargetValue() > 0) {
                 $progressPercentage = ($goal->getProgress() / $goal->getTargetValue()) * 100;
                 $totalProgress += min(100, $progressPercentage);
+            } else {
+                $totalProgress += 0;
             }
         }
 

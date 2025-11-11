@@ -9,7 +9,7 @@
             <div class="col">
                 <div class="welcome-header p-4 rounded-4 position-relative overflow-hidden">
                     <div class="position-relative z-1">
-                        <h1 class="display-5 fw-bold text-white mb-2">Welcome back, {{ user.firstName }}</h1>
+                        <h1 class="display-5 fw-bold text-white mb-2">Welcome back, {{ app.user.firstName }}</h1>
                         <p class="text-white-50 mb-0">Here's what's happening with your teams today</p>
                     </div>
                 </div>
@@ -375,7 +375,7 @@
                                                             {% endif %}
                                                         </div>
                                                     </div>
-                                                    <a href="{{ path('task_show',{'task':task.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill ms-3">
+                                                    <a href="{{ path('task_show',{'id':task.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill ms-3">
                                                         <i class="fas fa-arrow-right"></i>
                                                     </a>
                                                 </div>

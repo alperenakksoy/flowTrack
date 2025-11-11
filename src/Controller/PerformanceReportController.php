@@ -55,7 +55,7 @@ class PerformanceReportController extends AbstractController
             throw $this->createNotFoundException('User not found');
         }
 
-        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
+//        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
 
         $week = $request->query->getInt('week', (int) date('W'));
         $year = $request->query->getInt('year', (int) date('Y'));

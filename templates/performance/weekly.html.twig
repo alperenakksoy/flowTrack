@@ -2,21 +2,29 @@
 
 {% block title %}Weekly Performance Report{% endblock %}
 
+{% block stylesheets %}
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 2rem;
+        }
+        .chart-card {
+            min-height: 400px;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 
-    {# Set shortcut variables for easier access #}
-    {% set taskMetrics = metrics.taskMetrics %}
-    {% set taskBasics = metrics.taskMetrics.basicMetrics %}
-    {% set taskTime = metrics.taskMetrics.timeMetrics %}
-    {% set taskPriority = metrics.taskMetrics.priorityMetrics %}
-    {% set goalMetrics = metrics.goalMetrics %}
+    {% set taskBasics = taskMetrics.basicMetrics %}
+    {% set taskTime = taskMetrics.timeMetrics %}
+    {% set taskPriority = taskMetrics.priorityMetrics %}
 
     <div class="container">
-        {# Header Section #}
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h1>Weekly Performance Report</h1>
-                {# Show whose performance is being viewed #}
                 {% if isOwnPerformance %}
                     <p class="text-muted mb-0">Your Performance - Week {{ week }} - {{ year }}</p>
                 {% else %}
@@ -35,7 +43,6 @@
             </div>
         </div>
 
-        {# User Info Badge (only show when viewing someone else's performance) #}
         {% if not isOwnPerformance %}
             <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
                 <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:">
@@ -47,7 +54,6 @@
             </div>
         {% endif %}
 
-        {# Combined Score Hero Section #}
         <div class="text-center text-white bg-primary bg-gradient rounded-3 shadow-lg p-5 mb-5">
             <h2 class="fw-light mb-4">Combined Weekly Performance Score</h2>
             <div class="display-1 fw-bold mb-4">{{ combinedScore|number_format(1) }}%</div>
@@ -73,7 +79,6 @@
                 {% endif %}
             </div>
 
-            {# Task & Goal Score Breakdown #}
             <div class="row row-cols-1 row-cols-md-2 g-4 mt-4">
                 <div class="col">
                     <div class="p-3 bg-light bg-opacity-25 rounded-3">
@@ -90,7 +95,65 @@
             </div>
         </div>
 
-        {# Task Overview Cards - NOW INCLUDES IN-PROGRESS #}
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card shadow-sm chart-card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">📊 Performance Breakdown</h4>
+                        <div class="chart-container">
+                            <canvas id="performanceBreakdownChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm chart-card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">📋 Task Distribution</h4>
+                        <div class="chart-container">
+                            <canvas id="taskStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm chart-card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">✅ Completion Rates</h4>
+                        <div class="chart-container">
+                            <canvas id="completionRatesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm chart-card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">🎯 Goal Status</h4>
+                        <div class="chart-container">
+                            <canvas id="goalStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if taskMetrics.priorityMetrics.completionRateByPriority is defined and taskMetrics.priorityMetrics.completionRateByPriority is not empty %}
+                <div class="col-12">
+                    <div class="card shadow-sm chart-card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">🎯 Completion Rate by Priority</h4>
+                            <div class="chart-container">
+                                <canvas id="priorityCompletionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-4 mb-5">
             <div class="col">
                 <div class="card shadow-sm h-100">
@@ -134,17 +197,13 @@
             </div>
         </div>
 
-        {# Performance Breakdown #}
         <div class="row row-cols-1 row-cols-lg-2 g-5 mb-5">
-
-            {# Task Performance Section #}
             <div class="col">
                 <div class="card shadow-sm h-100">
                     <div class="card-body p-4">
                         <h3 class="mb-4 d-flex align-items-center">
                             <span class="me-2">📋</span> Task Performance
                         </h3>
-
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center p-3 bg-primary-subtle rounded mb-3">
                                 <span class="fw-semibold">Total Tasks</span>
@@ -163,14 +222,12 @@
                                 <span class="h4 fw-bold text-info mb-0">{{ taskBasics.tasksCompletedOnTime }}</span>
                             </div>
                         </div>
-
-                        {# Progress Bar #}
                         <div class="mt-4">
                             <div class="d-flex justify-content-between">
                                 <span class="small fw-semibold text-primary">Task Completion Progress</span>
                                 <span class="small fw-semibold text-primary">{{ taskBasics.taskCompletionRate|number_format(1) }}%</span>
                             </div>
-                            <div class="progress" role="progressbar" aria-label="Task Completion" aria-valuenow="{{ taskBasics.taskCompletionRate }}" aria-valuemin="0" aria-valuemax="100" style="height: 1rem">
+                            <div class="progress" role="progressbar" style="height: 1rem">
                                 <div class="progress-bar bg-primary" style="width: {{ taskBasics.taskCompletionRate }}%"></div>
                             </div>
                         </div>
@@ -178,14 +235,12 @@
                 </div>
             </div>
 
-            {# Goal Performance Section #}
             <div class="col">
                 <div class="card shadow-sm h-100">
                     <div class="card-body p-4">
                         <h3 class="mb-4 d-flex align-items-center">
                             <span class="me-2">🎯</span> Goal Performance
                         </h3>
-
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center p-3 bg-warning-subtle rounded mb-3">
                                 <span class="fw-semibold">Total Goals</span>
@@ -200,18 +255,15 @@
                                 <span class="h4 fw-bold text-primary mb-0">{{ goalMetrics.inProgressGoals }}</span>
                             </div>
                         </div>
-
-                        {# Progress Bar #}
                         <div class="mt-4">
                             <div class="d-flex justify-content-between">
                                 <span class="small fw-semibold text-success">Goal Completion Progress</span>
                                 <span class="small fw-semibold text-success">{{ goalMetrics.completionRate }}%</span>
                             </div>
-                            <div class="progress" role="progressbar" aria-label="Goal Completion" aria-valuenow="{{ goalMetrics.completionRate }}" aria-valuemin="0" aria-valuemax="100" style="height: 1rem">
+                            <div class="progress" role="progressbar" style="height: 1rem">
                                 <div class="progress-bar bg-success" style="width: {{ goalMetrics.completionRate }}%"></div>
                             </div>
                         </div>
-
                         <div class="mt-4 p-3 bg-primary-subtle rounded">
                             <div class="small text-muted mb-1">Average Goal Progress</div>
                             <div class="h3 fw-bold text-primary mb-0">{{ goalMetrics.averageProgress }}%</div>
@@ -221,7 +273,6 @@
             </div>
         </div>
 
-        {# Time Metrics #}
         <div class="card shadow-sm p-4 mb-5">
             <h3 class="mb-4 d-flex align-items-center">
                 <span class="me-2">⏱️</span> Time Performance
@@ -236,7 +287,6 @@
                         </div>
                     </div>
                 </div>
-
                 {% if taskTime.averageCompletionTime is defined and taskTime.averageCompletionTime %}
                     <div class="col">
                         <div class="p-3 bg-primary-subtle rounded-3 h-100">
@@ -248,7 +298,6 @@
                         </div>
                     </div>
                 {% endif %}
-
                 {% if taskTime.averageDelayHours is defined and taskTime.averageDelayHours %}
                     <div class="col">
                         <div class="p-3 bg-danger-subtle rounded-3 h-100">
@@ -271,12 +320,10 @@
             </div>
         </div>
 
-        {# Weekly Summary & Recommendations #}
         <div class="card shadow-sm p-4 mb-4">
             <h3 class="mb-4 d-flex align-items-center">
                 <span class="me-2">💼</span> Weekly Summary
             </h3>
-
             <div class="row row-cols-1 row-cols-md-2 g-4">
                 <div class="col">
                     <div class="p-4 bg-success-subtle border border-success-subtle rounded-3 h-100">
@@ -311,13 +358,12 @@
                             {% if taskBasics.openTasks == 0 %}
                                 <li class="d-flex mb-2">
                                     <span class="text-success me-2">•</span>
-                                    <span>All tasks completed - no pending work!</span>
+                                    <span>All tasks completed—no pending work!</span>
                                 </li>
                             {% endif %}
                         </ul>
                     </div>
                 </div>
-
                 <div class="col">
                     <div class="p-4 bg-primary-subtle border border-primary-subtle rounded-3 h-100">
                         <h4 class="text-primary-emphasis d-flex align-items-center mb-4">
@@ -359,4 +405,153 @@
         </div>
 
     </div>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+        Chart.defaults.color = '#6c757d';
+
+        new Chart(document.getElementById('performanceBreakdownChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Task Score', 'Goal Score', 'Combined Score'],
+                datasets: [{
+                    label: 'Performance Score (%)',
+                    data: [{{ taskScore|default(0) }}, {{ goalScore|default(0) }}, {{ combinedScore|default(0) }}],
+                    backgroundColor: ['rgba(13, 110, 253, 0.8)', 'rgba(25, 135, 84, 0.8)', 'rgba(111, 66, 193, 0.8)'],
+                    borderColor: ['rgb(13, 110, 253)', 'rgb(25, 135, 84)', 'rgb(111, 66, 193)'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '%' } }
+                }
+            }
+        });
+
+        // 2. Task Status Distribution
+        new Chart(document.getElementById('taskStatusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Open/In Progress'],
+                datasets: [{
+                    data: [{{ taskMetrics.basicMetrics.completedTasks|default(0) }}, {{ taskMetrics.basicMetrics.openTasks|default(0) }}],
+                    backgroundColor: ['rgba(25, 135, 84, 0.8)', 'rgba(255, 193, 7, 0.8)'],
+                    borderColor: ['rgb(25, 135, 84)', 'rgb(255, 193, 7)'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                const total = {{ taskMetrics.basicMetrics.totalTasksInPeriod|default(0) }};
+                                const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                                return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3. Completion Rates
+        new Chart(document.getElementById('completionRatesChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Task Completion', 'On-Time Completion', 'Goal Completion'],
+                datasets: [{
+                    label: 'Rate (%)',
+                    data: [{{ taskMetrics.basicMetrics.taskCompletionRate|default(0) }}, {{ taskMetrics.basicMetrics.onTimeCompletionRate|default(0) }}, {{ goalMetrics.completionRate|default(0) }}],
+                    backgroundColor: ['rgba(13, 110, 253, 0.8)', 'rgba(13, 202, 240, 0.8)', 'rgba(25, 135, 84, 0.8)'],
+                    borderColor: ['rgb(13, 110, 253)', 'rgb(13, 202, 240)', 'rgb(25, 135, 84)'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => ctx.parsed.x.toFixed(1) + '%' } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('goalStatusChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Completed', 'In Progress', 'Not Started'],
+                datasets: [{
+                    data: [{{ goalMetrics.completedGoals|default(0) }}, {{ goalMetrics.inProgressGoals|default(0) }}, {{ (goalMetrics.totalGoals|default(0)) - (goalMetrics.completedGoals|default(0)) - (goalMetrics.inProgressGoals|default(0)) }}],
+                    backgroundColor: ['rgba(25, 135, 84, 0.8)', 'rgba(13, 110, 253, 0.8)', 'rgba(108, 117, 125, 0.8)'],
+                    borderColor: ['rgb(25, 135, 84)', 'rgb(13, 110, 253)', 'rgb(108, 117, 125)'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                const total = {{ goalMetrics.totalGoals|default(0) }};
+                                const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                                return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        {% if taskMetrics.priorityMetrics.completionRateByPriority is defined and taskMetrics.priorityMetrics.completionRateByPriority is not empty %}
+        new Chart(document.getElementById('priorityCompletionChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Low Priority', 'Medium Priority', 'High Priority'],
+                datasets: [{
+                    label: 'Completion Rate (%)',
+                    data: [
+                        {{ taskMetrics.priorityMetrics.completionRateByPriority[1]|default(0) }},
+                        {{ taskMetrics.priorityMetrics.completionRateByPriority[2]|default(0) }},
+                        {{ taskMetrics.priorityMetrics.completionRateByPriority[3]|default(0) }}
+                    ],
+                    backgroundColor: ['rgba(13, 202, 240, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(220, 53, 69, 0.8)'],
+                    borderColor: ['rgb(13, 202, 240)', 'rgb(255, 193, 7)', 'rgb(220, 53, 69)'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => 'Completion: ' + ctx.parsed.y.toFixed(1) + '%' } }
+                }
+            }
+        });
+        {% endif %}
+    </script>
 {% endblock %}

@@ -34,7 +34,7 @@ class Goal
     private ?int $year = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $status = 'active'; // active, completed, cancelled
+    private ?string $status = 'open'; // open, closed, cancelled
 
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $unit = null; // e.g., 'hours', 'items', 'percentage'
@@ -52,7 +52,7 @@ class Goal
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->progress = 0.0;
-        $this->status = 'active';
+        $this->status = 'open';
     }
 
     public function getId(): ?int

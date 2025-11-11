@@ -1,5 +1,5 @@
-<h2>Congratulations {{ user.firstName }} {{ user.lastName }} !!</h2>
-<p>You have completed your task</p>
+<h2>TASK COMPLETED</h2>
+<p>{{ user.firstName }} {{ user.lastName }} have completed the task named <strong>{{ task.title }}</strong></p>
 <p><strong>Completed Date:</strong> {{ task.completedAt|date('d-m-Y') }}</p>
 <p><strong>Completed by:</strong> {{ completedBy.firstName }} {{ completedBy.lastName }}</p>
 

@@ -59,7 +59,7 @@ class TaskAdmin extends AbstractAdmin
             ])
             ->add('status', ChoiceType::class, [
                 'choices' => [
-                    'Active' => 'active',
+                    'Open' => 'open',
                     'In Progress' => 'in_progress',
                     'Closed' => 'closed',
                     'Cancelled' => 'cancelled',

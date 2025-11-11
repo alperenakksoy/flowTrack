@@ -112,4 +112,58 @@ class TaskController extends AbstractController
 
         return $this->redirectToRoute('dashboard');
     }
+    #[Route('/task/start/{id}', name: 'task_start', methods: ['POST'])]
+    public function start(Task $task, EntityManagerInterface $em, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('start'.$task->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+        }
+        $this->denyAccessUnlessGranted(Permissions::EDIT, $task);
+
+        if ('open' !== $task->getStatus()) {
+            $this->addFlash('error', 'This task already in progress or closed.');
+        }
+        $task->setStatus('in_progress');
+        $task->setUpdatedAt(new \DateTimeImmutable());
+
+        $em->flush();
+
+        $this->addFlash('success', 'Task has been started!');
+
+        return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+    }
+
+    #[Route('/task/complete/{id}', name: 'task_complete', methods: ['POST'])]
+    public function complete(Task $task, EntityManagerInterface $em, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('complete'.$task->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+        }
+
+        $this->denyAccessUnlessGranted(Permissions::EDIT, $task);
+
+        if ('in_progress' !== $task->getStatus()) {
+            $this->addFlash('error', 'Only tasks in progress can be completed.');
+
+            return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+        }
+
+        $task->setStatus('closed');
+        $task->setCompletedAt(new \DateTimeImmutable());
+        $task->setUpdatedAt(new \DateTimeImmutable());
+
+        $em->flush();
+
+        if ($task->getCreatedBy()) {
+            $this->notificationService->sendTaskCompletedEmail($task, $task->getCreatedBy());
+        }
+
+        $this->addFlash('success', 'Task completed successfully!');
+
+        return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
+    }
 }

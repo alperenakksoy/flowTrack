@@ -117,7 +117,11 @@
                                     <tbody>
                                     {% for task in activeTasks %}
                                         <tr>
-                                            <td class="fw-medium">{{ task.title }}</td>
+                                            <td class="fw-medium">
+                                                <a href="{{ path('task_show', { id: task.id }) }}" class="task-link">
+                                                    {{ task.title }}
+                                                </a>
+                                            </td>
                                             <td><span class="badge rounded-pill {{ task.status == 'in_progress' ? 'bg-primary-subtle text-primary-emphasis' : 'bg-danger-subtle text-danger-emphasis' }}">{{ task.status|replace({'_': ' '})|title }}</span></td>
                                             <td>
                                                 {% if task.priority == 3 %}<span class="badge bg-danger-subtle text-danger-emphasis rounded-pill">High</span>
@@ -130,9 +134,9 @@
                                                 {{ task.description ? (task.description|striptags|slice(0, 60) ~ (task.description|striptags|length > 60 ? '…'))|raw : '–' }}
                                             </td>
                                             <td class="text-end">
-                                                <button class="btn btn-sm btn-link text-secondary text-decoration-none" title="View Details">
+                                                <a class="btn btn-sm btn-link text-secondary text-decoration-none" href="{{ path('task_show', {id: task.id}) }}" title="View Details">
                                                     <i class="fas fa-eye"></i>
-                                                </button>
+                                                </a>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -260,6 +264,16 @@
         .icon-warning { background-color: var(--bs-warning-subtle); color: var(--bs-warning-emphasis); }
         .icon-info { background-color: var(--bs-info-subtle); color: var(--bs-info-emphasis); }
 
+        .task-link {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.2s ease;
+        }
+
+        .task-link:hover {
+            color: #007bff;
+            text-decoration: none;
+        }
 
         /* --- Dashboard Navigation (Tabs) --- */
         .dashboard-nav.nav-pills {

@@ -51,11 +51,10 @@ class TaskVoter extends Voter
         $task = $subject instanceof Task ? $subject : null;
 
         return match ($attribute) {
-            Permissions::VIEW => $task && ($task->getCreatedBy()?->getId() === $user->getId()
+            Permissions::VIEW, Permissions::EDIT => $task && ($task->getCreatedBy()?->getId() === $user->getId()
                     || $task->getAssignedTo()?->getId() === $user->getId()),
 
             Permissions::CREATE => false,
-            Permissions::EDIT => $task && $task->getCreatedBy()?->getId() === $user->getId(),
             Permissions::DELETE => false,
 
             default => false,

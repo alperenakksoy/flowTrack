@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Security\Permissions;
 use App\Service\ScoringService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -54,9 +55,7 @@ class PerformanceReportController extends AbstractController
             throw $this->createNotFoundException('User not found');
         }
 
-        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
-            throw $this->createAccessDeniedException('You cannot view this user\'s performance');
-        }
+        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
 
         $week = $request->query->getInt('week', (int) date('W'));
         $year = $request->query->getInt('year', (int) date('Y'));

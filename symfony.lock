@@ -156,6 +156,18 @@
             "bin/phpunit"
         ]
     },
+    "sensiolabs/gotenberg-bundle": {
+        "version": "1.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "4b40c14df89ba85902d42b112fee818843af6530"
+        },
+        "files": [
+            "config/packages/gotenberg.yaml"
+        ]
+    },
     "sonata-project/admin-bundle": {
         "version": "4.38",
         "recipe": {
@@ -467,6 +479,9 @@
             "version": "7.0",
             "ref": "0df5844274d871b37fc3816c57a768ffc60a43a5"
         }
+    },
+    "symfony/ux-chartjs": {
+        "version": "v2.31.0"
     },
     "symfony/ux-turbo": {
         "version": "2.30",

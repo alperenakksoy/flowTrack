@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "49b0876b0185c38455d25aa550f52238",
+    "content-hash": "b2c2dbb0ab76618aae921a33452b9931",
     "packages": [
         {
             "name": "api-platform/doctrine-common",
@@ -3930,6 +3930,95 @@
                 "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
             "time": "2024-09-11T13:17:53+00:00"
+        },
+        {
+            "name": "sensiolabs/gotenberg-bundle",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sensiolabs/GotenbergBundle.git",
+                "reference": "8aad160eac4a41839894e7fe77706c98f9a62a29"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sensiolabs/GotenbergBundle/zipball/8aad160eac4a41839894e7fe77706c98f9a62a29",
+                "reference": "8aad160eac4a41839894e7fe77706c98f9a62a29",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": ">=8.1",
+                "psr/container": "^2.0",
+                "psr/log": "^3.0",
+                "symfony/config": "^6.4 || ^7.0",
+                "symfony/dependency-injection": "^6.4 || ^7.0",
+                "symfony/filesystem": "^6.4 || ^7.0",
+                "symfony/http-client-contracts": "^3.5",
+                "symfony/http-foundation": "^6.4 || ^7.0",
+                "symfony/http-kernel": "^6.4 || ^7.0",
+                "symfony/mime": "^6.4 || ^7.0",
+                "symfony/service-contracts": "^3.6"
+            },
+            "require-dev": {
+                "async-aws/s3": "^2.6",
+                "ext-mbstring": "*",
+                "friendsofphp/php-cs-fixer": "^3.41",
+                "league/flysystem": "^3.29",
+                "phpstan/extension-installer": "^1.3",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpstan/phpstan-symfony": "^2.0",
+                "phpunit/phpunit": "^10.5.46",
+                "shipmonk/composer-dependency-analyser": "^1.8",
+                "symfony/error-handler": "^7.3",
+                "symfony/framework-bundle": "^6.4 || ^7.0",
+                "symfony/http-client": "^6.4 || ^7.0",
+                "symfony/monolog-bundle": "^3.10",
+                "symfony/routing": "^6.4 || ^7.0",
+                "symfony/stopwatch": "^6.4 || ^7.0",
+                "symfony/twig-bundle": "^6.4 || ^7.0",
+                "symfony/var-dumper": "^6.4 || ^7.0",
+                "symfony/yaml": "^6.4 || ^7.0",
+                "twig/twig": "^3.14"
+            },
+            "suggest": {
+                "async-aws/s3": "Upload any file to aws s3 compatible endpoints supporting multi part upload without memory overhead.",
+                "league/flysystem-bundle": "Upload any file using this filesystem abstraction package.",
+                "monolog/monolog": "Enables logging througout the generating process.",
+                "symfony/monolog-bundle": "Enables logging througout the generating process.",
+                "symfony/routing": "Allows you to use webhook to generate URL or route.",
+                "symfony/twig-bundle": "Allows you to use Twig to render templates into PDF."
+            },
+            "type": "symfony-bundle",
+            "autoload": {
+                "psr-4": {
+                    "Sensiolabs\\GotenbergBundle\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Steven Renaux",
+                    "email": "steven.renaux@sensiolabs.com"
+                }
+            ],
+            "description": "Gotenberg support for Symfony",
+            "keywords": [
+                "Gotenberg",
+                "bundle",
+                "office",
+                "pdf",
+                "screenshot",
+                "symfony"
+            ],
+            "support": {
+                "issues": "https://github.com/sensiolabs/GotenbergBundle/issues",
+                "source": "https://github.com/sensiolabs/GotenbergBundle/tree/v1.0.0"
+            },
+            "time": "2025-07-09T14:29:16+00:00"
         },
         {
             "name": "sonata-project/admin-bundle",
@@ -10478,6 +10567,90 @@
             "time": "2025-06-27T19:55:54+00:00"
         },
         {
+            "name": "symfony/ux-chartjs",
+            "version": "v2.31.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/ux-chartjs.git",
+                "reference": "17f3e24bca0444a2316e408c4d4d13d89598a187"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/ux-chartjs/zipball/17f3e24bca0444a2316e408c4d4d13d89598a187",
+                "reference": "17f3e24bca0444a2316e408c4d4d13d89598a187",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1",
+                "symfony/config": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/dependency-injection": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/http-kernel": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/stimulus-bundle": "^2.9.1"
+            },
+            "conflict": {
+                "symfony/flex": "<1.13"
+            },
+            "require-dev": {
+                "symfony/framework-bundle": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/phpunit-bridge": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/twig-bundle": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/var-dumper": "^5.4|^6.0|^7.0|^8.0"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/ux",
+                    "name": "symfony/ux"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\UX\\Chartjs\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Titouan Galopin",
+                    "email": "galopintitouan@gmail.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Chart.js integration for Symfony",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "symfony-ux"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/ux-chartjs/tree/v2.31.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2025-10-16T07:24:06+00:00"
+        },
+        {
             "name": "symfony/ux-turbo",
             "version": "v2.30.0",
             "source": {
@@ -14750,14 +14923,15 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": ">=8.3",
         "ext-ctype": "*",
+        "ext-http": "*",
         "ext-iconv": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

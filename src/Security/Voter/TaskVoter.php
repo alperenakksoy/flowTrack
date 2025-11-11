@@ -24,14 +24,15 @@ class TaskVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        if (!in_array($attribute, self::SUPPORTED_ATTRIBUTES)) {
+        if (!in_array($attribute, self::SUPPORTED_ATTRIBUTES, true)) {
             return false;
         }
-        if (!$subject instanceof Task) {
-            return Task::class === $subject && Permissions::CREATE === $attribute;
+
+        if (Permissions::CREATE === $attribute) {
+            return Task::class === $subject || $subject instanceof Task;
         }
 
-        return true;
+        return $subject instanceof Task;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
@@ -54,8 +55,7 @@ class TaskVoter extends Voter
             Permissions::VIEW, Permissions::EDIT => $task && ($task->getCreatedBy()?->getId() === $user->getId()
                     || $task->getAssignedTo()?->getId() === $user->getId()),
 
-            Permissions::CREATE => false,
-            Permissions::DELETE => false,
+            Permissions::CREATE, Permissions::DELETE => false,
 
             default => false,
         };

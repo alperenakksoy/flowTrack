@@ -356,239 +356,259 @@
         Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
         Chart.defaults.color = '#6c757d';
 
-        new Chart(document.getElementById('performanceBreakdownChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Task Score', 'Goal Score', 'Combined Score'],
-                datasets: [{
-                    label: 'Performance Score (%)',
-                    data: [
-                        {{ taskScore|default(0) }},
-                        {{ goalScore|default(0) }},
-                        {{ combinedScore|default(0) }}
-                    ],
-                    backgroundColor: [
-                        'rgba(13, 110, 253, 0.8)',
-                        'rgba(25, 135, 84, 0.8)',
-                        'rgba(111, 66, 193, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgb(13, 110, 253)',
-                        'rgb(25, 135, 84)',
-                        'rgb(111, 66, 193)'
-                    ],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
+        // 1. Performance Breakdown Chart
+        (function() {
+            const canvas = document.getElementById('performanceBreakdownChart');
+            const taskScore = parseFloat(canvas.dataset.taskScore) || 0;
+            const goalScore = parseFloat(canvas.dataset.goalScore) || 0;
+            const combinedScore = parseFloat(canvas.dataset.combinedScore) || 0;
+
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Task Score', 'Goal Score', 'Combined Score'],
+                    datasets: [{
+                        label: 'Performance Score (%)',
+                        data: [taskScore, goalScore, combinedScore],
+                        backgroundColor: [
+                            'rgba(13, 110, 253, 0.8)',
+                            'rgba(25, 135, 84, 0.8)',
+                            'rgba(111, 66, 193, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(13, 110, 253)',
+                            'rgb(25, 135, 84)',
+                            'rgb(111, 66, 193)'
+                        ],
+                        borderWidth: 2
+                    }]
                 },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.parsed.y.toFixed(1) + '%';
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toFixed(1) + '%';
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        })();
 
-        new Chart(document.getElementById('taskStatusChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Completed', 'Open/In Progress'],
-                datasets: [{
-                    data: [
-                        {{ taskMetrics.basicMetrics.completedTasks|default(0) }},
-                        {{ taskMetrics.basicMetrics.openTasks|default(0) }}
-                    ],
-                    backgroundColor: [
-                        'rgba(25, 135, 84, 0.8)',
-                        'rgba(255, 193, 7, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgb(25, 135, 84)',
-                        'rgb(255, 193, 7)'
-                    ],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const total = {{ taskMetrics.basicMetrics.totalTasksInPeriod|default(0) }};
-                                const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
-                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        // 2. Task Status Distribution
+        (function() {
+            const canvas = document.getElementById('taskStatusChart');
+            const completedTasks = parseInt(canvas.dataset.completed) || 0;
+            const openTasks = parseInt(canvas.dataset.open) || 0;
+            const totalTasks = parseInt(canvas.dataset.total) || 0;
 
-        new Chart(document.getElementById('completionRatesChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Task Completion', 'On-Time Completion', 'Goal Completion'],
-                datasets: [{
-                    label: 'Rate (%)',
-                    data: [
-                        {{ taskMetrics.basicMetrics.taskCompletionRate|default(0) }},
-                        {{ taskMetrics.basicMetrics.onTimeCompletionRate|default(0) }},
-                        {{ goalMetrics.completionRate|default(0) }}
-                    ],
-                    backgroundColor: [
-                        'rgba(13, 110, 253, 0.8)',
-                        'rgba(13, 202, 240, 0.8)',
-                        'rgba(25, 135, 84, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgb(13, 110, 253)',
-                        'rgb(13, 202, 240)',
-                        'rgb(25, 135, 84)'
-                    ],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
+            new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Open/In Progress'],
+                    datasets: [{
+                        data: [completedTasks, openTasks],
+                        backgroundColor: [
+                            'rgba(25, 135, 84, 0.8)',
+                            'rgba(255, 193, 7, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(25, 135, 84)',
+                            'rgb(255, 193, 7)'
+                        ],
+                        borderWidth: 2
+                    }]
                 },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.parsed.x.toFixed(1) + '%';
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const percentage = totalTasks > 0 ? ((context.parsed / totalTasks) * 100).toFixed(1) : 0;
+                                    return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        })();
 
-        const completedGoals = {{ goalMetrics.completedGoals|default(0) }};
-        const inProgressGoals = {{ goalMetrics.inProgressGoals|default(0) }};
-        const totalGoals = {{ goalMetrics.totalGoals|default(0) }};
-        const notStartedGoals = totalGoals - completedGoals - inProgressGoals;
+        // 3. Completion Rates
+        (function() {
+            const canvas = document.getElementById('completionRatesChart');
+            const taskRate = parseFloat(canvas.dataset.taskRate) || 0;
+            const ontimeRate = parseFloat(canvas.dataset.ontimeRate) || 0;
+            const goalRate = parseFloat(canvas.dataset.goalRate) || 0;
 
-        new Chart(document.getElementById('goalStatusChart'), {
-            type: 'pie',
-            data: {
-                labels: ['Completed', 'In Progress', 'Not Started'],
-                datasets: [{
-                    data: [completedGoals, inProgressGoals, notStartedGoals],
-                    backgroundColor: [
-                        'rgba(25, 135, 84, 0.8)',
-                        'rgba(13, 110, 253, 0.8)',
-                        'rgba(108, 117, 125, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgb(25, 135, 84)',
-                        'rgb(13, 110, 253)',
-                        'rgb(108, 117, 125)'
-                    ],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const percentage = totalGoals > 0 ? ((context.parsed / totalGoals) * 100).toFixed(1) : 0;
-                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        {% if taskMetrics.priorityMetrics.completionRateByPriority is defined and taskMetrics.priorityMetrics.completionRateByPriority is not empty %}
-        new Chart(document.getElementById('priorityCompletionChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Low Priority', 'Medium Priority', 'High Priority'],
-                datasets: [{
-                    label: 'Completion Rate (%)',
-                    data: [
-                        {{ taskMetrics.priorityMetrics.completionRateByPriority[1]|default(0) }},
-                        {{ taskMetrics.priorityMetrics.completionRateByPriority[2]|default(0) }},
-                        {{ taskMetrics.priorityMetrics.completionRateByPriority[3]|default(0) }}
-                    ],
-                    backgroundColor: [
-                        'rgba(13, 202, 240, 0.8)',
-                        'rgba(255, 193, 7, 0.8)',
-                        'rgba(220, 53, 69, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgb(13, 202, 240)',
-                        'rgb(255, 193, 7)',
-                        'rgb(220, 53, 69)'
-                    ],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Task Completion', 'On-Time Completion', 'Goal Completion'],
+                    datasets: [{
+                        label: 'Rate (%)',
+                        data: [taskRate, ontimeRate, goalRate],
+                        backgroundColor: [
+                            'rgba(13, 110, 253, 0.8)',
+                            'rgba(13, 202, 240, 0.8)',
+                            'rgba(25, 135, 84, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(13, 110, 253)',
+                            'rgb(13, 202, 240)',
+                            'rgb(25, 135, 84)'
+                        ],
+                        borderWidth: 2
+                    }]
                 },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return 'Completion: ' + context.parsed.y.toFixed(1) + '%';
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.x.toFixed(1) + '%';
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
-        {% endif %}
+            });
+        })();
+
+        // 4. Goal Status Chart
+        (function() {
+            const canvas = document.getElementById('goalStatusChart');
+            const completedGoals = parseInt(canvas.dataset.completed) || 0;
+            const inProgressGoals = parseInt(canvas.dataset.inprogress) || 0;
+            const totalGoals = parseInt(canvas.dataset.total) || 0;
+            const notStartedGoals = Math.max(0, totalGoals - completedGoals - inProgressGoals);
+
+            new Chart(canvas, {
+                type: 'pie',
+                data: {
+                    labels: ['Completed', 'In Progress', 'Not Started'],
+                    datasets: [{
+                        data: [completedGoals, inProgressGoals, notStartedGoals],
+                        backgroundColor: [
+                            'rgba(25, 135, 84, 0.8)',
+                            'rgba(13, 110, 253, 0.8)',
+                            'rgba(108, 117, 125, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(25, 135, 84)',
+                            'rgb(13, 110, 253)',
+                            'rgb(108, 117, 125)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const percentage = totalGoals > 0 ? ((context.parsed / totalGoals) * 100).toFixed(1) : 0;
+                                    return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })();
+
+        // 5. Priority Completion Chart (conditional)
+        (function() {
+            const canvas = document.getElementById('priorityCompletionChart');
+            if (!canvas) return; // Exit if element doesn't exist
+
+            const lowPriority = parseFloat(canvas.dataset.low) || 0;
+            const mediumPriority = parseFloat(canvas.dataset.medium) || 0;
+            const highPriority = parseFloat(canvas.dataset.high) || 0;
+
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Low Priority', 'Medium Priority', 'High Priority'],
+                    datasets: [{
+                        label: 'Completion Rate (%)',
+                        data: [lowPriority, mediumPriority, highPriority],
+                        backgroundColor: [
+                            'rgba(13, 202, 240, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(13, 202, 240)',
+                            'rgb(255, 193, 7)',
+                            'rgb(220, 53, 69)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Completion: ' + context.parsed.y.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })();
     </script>
 {% endblock %}

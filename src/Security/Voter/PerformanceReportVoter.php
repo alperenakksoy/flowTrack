@@ -2,7 +2,6 @@
 
 namespace App\Security\Voter;
 
-use App\Entity\Task;
 use App\Entity\User;
 use App\Security\Permissions;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -13,9 +12,6 @@ class PerformanceReportVoter extends Voter
 {
     private const array SUPPORTED_ATTRIBUTES = [
         Permissions::VIEW,
-        Permissions::CREATE,
-        Permissions::EDIT,
-        Permissions::DELETE,
     ];
 
     public function __construct(private readonly Security $security)
@@ -24,19 +20,13 @@ class PerformanceReportVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        if (!in_array($attribute, self::SUPPORTED_ATTRIBUTES, true)) {
-            return false;
-        }
-
-        if (Permissions::CREATE === $attribute) {
-            return Task::class === $subject || $subject instanceof Task;
-        }
-
-        return $subject instanceof Task;
+        return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true)
+            && $subject instanceof User;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
+        /** @var User|null $loggedInUser */
         $loggedInUser = $token->getUser();
 
         if (!$loggedInUser instanceof User) {
@@ -46,23 +36,11 @@ class PerformanceReportVoter extends Voter
         /** @var User $targetUser */
         $targetUser = $subject;
 
-        if (Permissions::VIEW !== $attribute) {
-            return false;
-        }
-
-        if ($this->security->isGranted('ROLE_ADMIN')) {
+        if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_MANAGER')) {
             return true;
         }
 
         if ($loggedInUser->getId() === $targetUser->getId()) {
-            return true;
-        }
-
-        if ($this->security->isGranted('ROLE_MANAGER')
-            && null !== $loggedInUser->getTeam()
-            && null !== $targetUser->getTeam()
-            && $loggedInUser->getTeam()->getId() === $targetUser->getTeam()->getId()
-        ) {
             return true;
         }
 

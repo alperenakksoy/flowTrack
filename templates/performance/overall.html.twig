@@ -3,17 +3,14 @@
 {% block title %}Overall Performance Report{% endblock %}
 
 {% block body %}
-    {# Set shortcut variables for easier access #}
     {% set taskBasics = metrics.basicMetrics %}
     {% set taskTime = metrics.timeMetrics %}
     {% set taskPriority = metrics.priorityMetrics %}
 
     <div class="container">
-        {# Header Section #}
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h1>Overall Performance Report</h1>
-                {# Show whose performance is being viewed #}
                 {% if isOwnPerformance %}
                     <p class="text-muted mb-0">Your Complete Performance History</p>
                 {% else %}
@@ -29,10 +26,12 @@
                 <a href="{{ path('performance_monthly', {id: targetUser.id}) }}" class="btn btn-info">
                     Monthly Report
                 </a>
+                <a href="{{ path('performance_overall_download', {'id': targetUser.id}) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-file-pdf me-1"></i> Download PDF
+                </a>
             </div>
         </div>
 
-        {# User Info Badge (only show when viewing someone else's performance) #}
         {% if not isOwnPerformance %}
             <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
                 <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:">
@@ -44,7 +43,6 @@
             </div>
         {% endif %}
 
-        {# Overall Score Hero Section #}
         <div class="text-center text-white bg-gradient rounded-3 shadow-lg p-5 mb-5" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
             <h2 class="fw-light mb-4">Overall Performance Score</h2>
             <div class="display-1 fw-bold mb-4" style="font-size: 6rem;">{{ score|number_format(1) }}%</div>
@@ -53,7 +51,7 @@
             <div class="fs-4 mb-4">
                 {% if scoreLevel >= 90 %}
                     <span class="badge rounded-pill fs-5 fw-normal bg-light text-dark p-3">
-                        🏆 Top Performer - Exceptional Work!
+                        🏆 Top Performer—Exceptional Work!
                     </span>
                 {% elseif scoreLevel >= 75 %}
                     <span class="badge rounded-pill fs-5 fw-normal bg-light text-dark p-3">
@@ -73,7 +71,6 @@
             <p class="fs-6 mb-0 opacity-75">Based on all-time task performance metrics</p>
         </div>
 
-        {# Key Metrics Dashboard #}
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-4 mb-5">
             <div class="col">
                 <div class="card shadow h-100 border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
@@ -122,9 +119,7 @@
             </div>
         </div>
 
-        {# Performance Breakdown Section #}
         <div class="row g-4 mb-5">
-            {# Task Performance Details #}
             <div class="col-lg-6">
                 <div class="card shadow-sm h-100 border-0">
                     <div class="card-header bg-primary text-white py-3">
@@ -133,7 +128,6 @@
                         </h3>
                     </div>
                     <div class="card-body p-4">
-                        {# Main Progress Indicators #}
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="fw-semibold">Overall Completion Rate</span>
@@ -162,7 +156,6 @@
                             </div>
                         </div>
 
-                        {# Task Statistics Grid #}
                         <div class="row g-3">
                             <div class="col-6">
                                 <div class="p-3 bg-primary-subtle rounded-3 text-center h-100">
@@ -190,7 +183,6 @@
                             </div>
                         </div>
 
-                        {# Performance Rating #}
                         <div class="mt-4 p-4 {% if taskBasics.taskCompletionRate >= 80 %}bg-success-subtle{% elseif taskBasics.taskCompletionRate >= 60 %}bg-warning-subtle{% else %}bg-danger-subtle{% endif %} rounded-3 text-center">
                             <div class="fw-semibold mb-2">Performance Rating</div>
                             <div class="h3 mb-0">
@@ -211,7 +203,6 @@
                 </div>
             </div>
 
-            {# Time Performance Details #}
             <div class="col-lg-6">
                 <div class="card shadow-sm h-100 border-0">
                     <div class="card-header bg-success text-white py-3">
@@ -220,7 +211,6 @@
                         </h3>
                     </div>
                     <div class="card-body p-4">
-                        {# On-Time Performance #}
                         <div class="p-4 bg-info-subtle rounded-3 text-center mb-4">
                             <div class="text-muted mb-2">On-Time Completion Rate</div>
                             <div class="display-3 fw-bold text-info-emphasis mb-2">
@@ -231,7 +221,6 @@
                             </div>
                         </div>
 
-                        {# Average Completion Time #}
                         {% if taskTime.averageCompletionTime is defined and taskTime.averageCompletionTime %}
                             <div class="p-4 bg-primary-subtle rounded-3 text-center mb-4">
                                 <div class="text-muted mb-2">Average Completion Time</div>
@@ -242,7 +231,6 @@
                             </div>
                         {% endif %}
 
-                        {# Delay Analysis #}
                         <div class="p-4 {% if taskTime.averageDelayHours is defined and taskTime.averageDelayHours %}bg-danger-subtle{% else %}bg-success-subtle{% endif %} rounded-3 text-center mb-4">
                             <div class="text-muted mb-2">Average Delay</div>
                             {% if taskTime.averageDelayHours is defined and taskTime.averageDelayHours %}
@@ -256,7 +244,6 @@
                             {% endif %}
                         </div>
 
-                        {# Time Management Score #}
                         <div class="p-4 bg-light rounded-3 text-center">
                             <div class="fw-semibold mb-2">Time Management Grade</div>
                             <div class="h2 mb-0">
@@ -278,7 +265,6 @@
             </div>
         </div>
 
-        {# Priority Performance Section #}
         {% if taskPriority.successRateByPriority is defined and taskPriority.successRateByPriority|length > 0 %}
             <div class="card shadow-sm mb-5 border-0">
                 <div class="card-header bg-warning text-dark py-3">
@@ -358,7 +344,6 @@
                         {% endfor %}
                     </div>
 
-                    {# High Priority Highlight #}
                     {% if taskPriority.highPrioritySuccessRate is defined and taskPriority.highPrioritySuccessRate %}
                         <div class="p-4 bg-danger-subtle border border-danger rounded-3 text-center">
                             <h4 class="mb-3">🔴 High Priority Task Success Rate</h4>
@@ -384,7 +369,6 @@
             </div>
         {% endif %}
 
-        {# Overall Performance Summary #}
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <h3 class="mb-0 d-flex align-items-center text-white">
@@ -393,7 +377,6 @@
             </div>
             <div class="card-body p-4">
                 <div class="row g-4">
-                    {# Strengths #}
                     <div class="col-md-6">
                         <div class="p-4 bg-success-subtle border border-success rounded-3 h-100">
                             <h4 class="text-success-emphasis d-flex align-items-center mb-4">
@@ -440,7 +423,6 @@
                         </div>
                     </div>
 
-                    {# Growth Opportunities #}
                     <div class="col-md-6">
                         <div class="p-4 bg-primary-subtle border border-primary rounded-3 h-100">
                             <h4 class="text-primary-emphasis d-flex align-items-center mb-4">

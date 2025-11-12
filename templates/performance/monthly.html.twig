@@ -3,17 +3,14 @@
 {% block title %}Monthly Performance Report{% endblock %}
 
 {% block body %}
-    {# Set shortcut variables for easier access #}
     {% set taskBasics = metrics.basicMetrics %}
     {% set taskTime = metrics.timeMetrics %}
     {% set taskPriority = metrics.priorityMetrics %}
 
     <div class="container">
-        {# Header Section #}
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h1>Monthly Performance Report</h1>
-                {# Show whose performance is being viewed #}
                 {% if isOwnPerformance %}
                     <p class="text-muted mb-0">Your Performance - {{ "now"|date("F Y") }}</p>
                 {% else %}
@@ -29,10 +26,12 @@
                 <a href="{{ path('performance_overall', {id: targetUser.id}) }}" class="btn btn-success">
                     Overall Report
                 </a>
+                <a href="{{ path('performance_monthly_download', {'id': targetUser.id}) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-file-pdf me-1"></i> Download PDF
+                </a>
             </div>
         </div>
 
-        {# User Info Badge (only show when viewing someone else's performance) #}
         {% if not isOwnPerformance %}
             <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
                 <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:">
@@ -44,7 +43,6 @@
             </div>
         {% endif %}
 
-        {# Overall Score Hero Section #}
         <div class="text-center text-white bg-gradient rounded-3 shadow-lg p-5 mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
             <h2 class="fw-light mb-4">Monthly Performance Score</h2>
             <div class="display-1 fw-bold mb-4">{{ score|number_format(1) }}%</div>
@@ -70,7 +68,6 @@
                 {% endif %}
             </div>
 
-            {# Performance Breakdown Pills #}
             <div class="row row-cols-2 row-cols-md-4 g-3 mt-4">
                 <div class="col">
                     <div class="p-3 bg-light bg-opacity-25 rounded-3">
@@ -99,7 +96,6 @@
             </div>
         </div>
 
-        {# Task Status Overview Cards #}
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
             <div class="col">
                 <div class="card shadow-sm h-100 border-0 bg-primary-subtle">
@@ -139,17 +135,13 @@
             </div>
         </div>
 
-        {# Detailed Metrics Section #}
         <div class="row g-4 mb-5">
-            {# Left Column - Task Performance #}
             <div class="col-lg-6">
                 <div class="card shadow-sm h-100">
                     <div class="card-body p-4">
                         <h3 class="mb-4 d-flex align-items-center">
                             <span class="me-2">📋</span> Task Performance Details
                         </h3>
-
-                        {# Completion Progress #}
                         <div class="mb-4">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="fw-semibold">Task Completion Rate</span>
@@ -176,7 +168,6 @@
                             </div>
                         </div>
 
-                        {# Task Breakdown #}
                         <div class="mt-4">
                             <h5 class="mb-3">Task Breakdown</h5>
                             <div class="row g-3">
@@ -210,7 +201,6 @@
                 </div>
             </div>
 
-            {# Right Column - Time Performance #}
             <div class="col-lg-6">
                 <div class="card shadow-sm h-100">
                     <div class="card-body p-4">
@@ -266,7 +256,6 @@
             </div>
         </div>
 
-        {# Priority Performance Section #}
         {% if taskPriority.successRateByPriority is defined and taskPriority.successRateByPriority|length > 0 %}
             <div class="card shadow-sm mb-5">
                 <div class="card-body p-4">

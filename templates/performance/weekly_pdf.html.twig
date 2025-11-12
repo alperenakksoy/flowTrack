@@ -256,28 +256,6 @@
             color: #6c757d;
         }
 
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-
-        .summary-card {
-            padding: 25px;
-            border-radius: 8px;
-            border: 2px solid;
-        }
-
-        .summary-card.wins {
-            background: #d1e7dd;
-            border-color: #198754;
-        }
-
-        .summary-card.focus {
-            background: #cfe2ff;
-            border-color: #0d6efd;
-        }
-
         .summary-card h4 {
             font-size: 18px;
             margin-bottom: 20px;
@@ -501,51 +479,6 @@
                     <div class="subtext">No delays recorded</div>
                 </div>
             {% endif %}
-        </div>
-    </div>
-
-    <div class="section">
-        <h2 class="section-title">💼 Weekly Summary</h2>
-        <div class="summary-grid">
-            <div class="summary-card wins">
-                <h4>✅ This Week's Wins</h4>
-                <ul>
-                    {% if combinedScore >= 80 %}
-                        <li>Excellent overall weekly performance</li>
-                    {% endif %}
-                    {% if taskBasics.taskCompletionRate >= 75 %}
-                        <li>Strong task completion ({{ taskBasics.taskCompletionRate|number_format(1) }}%)</li>
-                    {% endif %}
-                    {% if goalMets.completionRate >= 75 %}
-                        <li>Great goal achievement ({{ goalMets.completionRate }}%)</li>
-                    {% endif %}
-                    {% if taskBasics.onTimeCompletionRate >= 80 %}
-                        <li>Excellent time management this week</li>
-                    {% endif %}
-                    {% if taskBasics.openTasks == 0 %}
-                        <li>All tasks completed—no pending work!</li>
-                    {% endif %}
-                </ul>
-            </div>
-
-            <div class="summary-card focus">
-                <h4>🎯 Focus for Next Week</h4>
-                <ul>
-                    {% if taskBasics.openTasks > 0 %}
-                        <li>Complete {{ taskBasics.openTasks }} pending task(s)</li>
-                    {% endif %}
-                    {% if taskBasics.taskCompletionRate < 75 %}
-                        <li>Improve task completion rate</li>
-                    {% endif %}
-                    {% if goalMets.completionRate < 75 %}
-                        <li>Focus on goal achievement</li>
-                    {% endif %}
-                    {% if taskBasics.onTimeCompletionRate < 80 %}
-                        <li>Work on timely task delivery</li>
-                    {% endif %}
-                    <li>Set clear priorities for the week ahead</li>
-                </ul>
-            </div>
         </div>
     </div>
 

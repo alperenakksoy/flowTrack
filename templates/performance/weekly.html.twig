@@ -104,7 +104,12 @@
                     <div class="card-body">
                         <h4 class="card-title mb-4">📊 Performance Breakdown</h4>
                         <div class="chart-container">
-                            <canvas id="performanceBreakdownChart"></canvas>
+                            {# --- MODIFIED: Added data-* attributes --- #}
+                            <canvas id="performanceBreakdownChart"
+                                    data-task-score="{{ taskScore|default(0) }}"
+                                    data-goal-score="{{ goalScore|default(0) }}"
+                                    data-combined-score="{{ combinedScore|default(0) }}">
+                            </canvas>
                         </div>
                     </div>
                 </div>
@@ -115,7 +120,12 @@
                     <div class="card-body">
                         <h4 class="card-title mb-4">📋 Task Distribution</h4>
                         <div class="chart-container">
-                            <canvas id="taskStatusChart"></canvas>
+                            {# --- MODIFIED: Added data-* attributes --- #}
+                            <canvas id="taskStatusChart"
+                                    data-completed="{{ taskMetrics.basicMetrics.completedTasks|default(0) }}"
+                                    data-open="{{ taskMetrics.basicMetrics.openTasks|default(0) }}"
+                                    data-total="{{ taskMetrics.basicMetrics.totalTasksInPeriod|default(0) }}">
+                            </canvas>
                         </div>
                     </div>
                 </div>
@@ -126,7 +136,12 @@
                     <div class="card-body">
                         <h4 class="card-title mb-4">✅ Completion Rates</h4>
                         <div class="chart-container">
-                            <canvas id="completionRatesChart"></canvas>
+                            {# --- MODIFIED: Added data-* attributes --- #}
+                            <canvas id="completionRatesChart"
+                                    data-task-rate="{{ taskMetrics.basicMetrics.taskCompletionRate|default(0) }}"
+                                    data-ontime-rate="{{ taskMetrics.basicMetrics.onTimeCompletionRate|default(0) }}"
+                                    data-goal-rate="{{ goalMetrics.completionRate|default(0) }}">
+                            </canvas>
                         </div>
                     </div>
                 </div>
@@ -137,7 +152,12 @@
                     <div class="card-body">
                         <h4 class="card-title mb-4">🎯 Goal Status</h4>
                         <div class="chart-container">
-                            <canvas id="goalStatusChart"></canvas>
+                            {# --- MODIFIED: Added data-* attributes --- #}
+                            <canvas id="goalStatusChart"
+                                    data-completed="{{ goalMetrics.completedGoals|default(0) }}"
+                                    data-inprogress="{{ goalMetrics.inProgressGoals|default(0) }}"
+                                    data-total="{{ goalMetrics.totalGoals|default(0) }}">
+                            </canvas>
                         </div>
                     </div>
                 </div>
@@ -149,7 +169,12 @@
                         <div class="card-body">
                             <h4 class="card-title mb-4">🎯 Completion Rate by Priority</h4>
                             <div class="chart-container">
-                                <canvas id="priorityCompletionChart"></canvas>
+                                {# --- MODIFIED: Added data-* attributes --- #}
+                                <canvas id="priorityCompletionChart"
+                                        data-low="{{ taskMetrics.priorityMetrics.completionRateByPriority[1]|default(0) }}"
+                                        data-medium="{{ taskMetrics.priorityMetrics.completionRateByPriority[2]|default(0) }}"
+                                        data-high="{{ taskMetrics.priorityMetrics.completionRateByPriority[3]|default(0) }}">
+                                </canvas>
                             </div>
                         </div>
                     </div>
@@ -322,93 +347,9 @@
                 {% endif %}
             </div>
         </div>
-
-        <div class="card shadow-sm p-4 mb-4">
-            <h3 class="mb-4 d-flex align-items-center">
-                <span class="me-2">💼</span> Weekly Summary
-            </h3>
-            <div class="row row-cols-1 row-cols-md-2 g-4">
-                <div class="col">
-                    <div class="p-4 bg-success-subtle border border-success-subtle rounded-3 h-100">
-                        <h4 class="text-success-emphasis d-flex align-items-center mb-4">
-                            <span class="me-2">✅</span> This Week's Wins
-                        </h4>
-                        <ul class="list-unstyled mb-0">
-                            {% if combinedScore >= 80 %}
-                                <li class="d-flex mb-2">
-                                    <span class="text-success me-2">•</span>
-                                    <span>Excellent overall weekly performance</span>
-                                </li>
-                            {% endif %}
-                            {% if taskBasics.taskCompletionRate >= 75 %}
-                                <li class="d-flex mb-2">
-                                    <span class="text-success me-2">•</span>
-                                    <span>Strong task completion ({{ taskBasics.taskCompletionRate|number_format(1) }}%)</span>
-                                </li>
-                            {% endif %}
-                            {% if goalMetrics.completionRate >= 75 %}
-                                <li class="d-flex mb-2">
-                                    <span class="text-success me-2">•</span>
-                                    <span>Great goal achievement ({{ goalMetrics.completionRate }}%)</span>
-                                </li>
-                            {% endif %}
-                            {% if taskBasics.onTimeCompletionRate >= 80 %}
-                                <li class="d-flex mb-2">
-                                    <span class="text-success me-2">•</span>
-                                    <span>Excellent time management this week</span>
-                                </li>
-                            {% endif %}
-                            {% if taskBasics.openTasks == 0 %}
-                                <li class="d-flex mb-2">
-                                    <span class="text-success me-2">•</span>
-                                    <span>All tasks completed—no pending work!</span>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="p-4 bg-primary-subtle border border-primary-subtle rounded-3 h-100">
-                        <h4 class="text-primary-emphasis d-flex align-items-center mb-4">
-                            <span class="me-2">🎯</span> Focus for Next Week
-                        </h4>
-                        <ul class="list-unstyled mb-0">
-                            {% if taskBasics.openTasks > 0 %}
-                                <li class="d-flex mb-2">
-                                    <span class="text-primary me-2">•</span>
-                                    <span>Complete {{ taskBasics.openTasks }} pending task(s)</span>
-                                </li>
-                            {% endif %}
-                            {% if taskBasics.taskCompletionRate < 75 %}
-                                <li class="d-flex mb-2">
-                                    <span class="text-primary me-2">•</span>
-                                    <span>Improve task completion rate</span>
-                                </li>
-                            {% endif %}
-                            {% if goalMetrics.completionRate < 75 %}
-                                <li class="d-flex mb-2">
-                                    <span class="text-primary me-2">•</span>
-                                    <span>Focus on goal achievement</span>
-                                </li>
-                            {% endif %}
-                            {% if taskBasics.onTimeCompletionRate < 80 %}
-                                <li class="d-flex mb-2">
-                                    <span class="text-primary me-2">•</span>
-                                    <span>Work on timely task delivery</span>
-                                </li>
-                            {% endif %}
-                            <li class="d-flex mb-2">
-                                <span class="text-primary me-2">•</span>
-                                <span>Set clear priorities for the week ahead</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 {% endblock %}
+
 {% block javascripts %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
@@ -421,9 +362,21 @@
                 labels: ['Task Score', 'Goal Score', 'Combined Score'],
                 datasets: [{
                     label: 'Performance Score (%)',
-                    data: [{{ taskScore|default(0) }}, {{ goalScore|default(0) }}, {{ combinedScore|default(0) }}],
-                    backgroundColor: ['rgba(13, 110, 253, 0.8)', 'rgba(25, 135, 84, 0.8)', 'rgba(111, 66, 193, 0.8)'],
-                    borderColor: ['rgb(13, 110, 253)', 'rgb(25, 135, 84)', 'rgb(111, 66, 193)'],
+                    data: [
+                        {{ taskScore|default(0) }},
+                        {{ goalScore|default(0) }},
+                        {{ combinedScore|default(0) }}
+                    ],
+                    backgroundColor: [
+                        'rgba(13, 110, 253, 0.8)',
+                        'rgba(25, 135, 84, 0.8)',
+                        'rgba(111, 66, 193, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(13, 110, 253)',
+                        'rgb(25, 135, 84)',
+                        'rgb(111, 66, 193)'
+                    ],
                     borderWidth: 2
                 }]
             },
@@ -431,24 +384,46 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
                 },
                 plugins: {
                     legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '%' } }
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toFixed(1) + '%';
+                            }
+                        }
+                    }
                 }
             }
         });
 
-        // 2. Task Status Distribution
         new Chart(document.getElementById('taskStatusChart'), {
             type: 'doughnut',
             data: {
                 labels: ['Completed', 'Open/In Progress'],
                 datasets: [{
-                    data: [{{ taskMetrics.basicMetrics.completedTasks|default(0) }}, {{ taskMetrics.basicMetrics.openTasks|default(0) }}],
-                    backgroundColor: ['rgba(25, 135, 84, 0.8)', 'rgba(255, 193, 7, 0.8)'],
-                    borderColor: ['rgb(25, 135, 84)', 'rgb(255, 193, 7)'],
+                    data: [
+                        {{ taskMetrics.basicMetrics.completedTasks|default(0) }},
+                        {{ taskMetrics.basicMetrics.openTasks|default(0) }}
+                    ],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.8)',
+                        'rgba(255, 193, 7, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(25, 135, 84)',
+                        'rgb(255, 193, 7)'
+                    ],
                     borderWidth: 2
                 }]
             },
@@ -459,10 +434,10 @@
                     legend: { position: 'bottom' },
                     tooltip: {
                         callbacks: {
-                            label: ctx => {
+                            label: function(context) {
                                 const total = {{ taskMetrics.basicMetrics.totalTasksInPeriod|default(0) }};
-                                const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
-                                return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                                const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
                             }
                         }
                     }
@@ -470,16 +445,27 @@
             }
         });
 
-        // 3. Completion Rates
         new Chart(document.getElementById('completionRatesChart'), {
             type: 'bar',
             data: {
                 labels: ['Task Completion', 'On-Time Completion', 'Goal Completion'],
                 datasets: [{
                     label: 'Rate (%)',
-                    data: [{{ taskMetrics.basicMetrics.taskCompletionRate|default(0) }}, {{ taskMetrics.basicMetrics.onTimeCompletionRate|default(0) }}, {{ goalMetrics.completionRate|default(0) }}],
-                    backgroundColor: ['rgba(13, 110, 253, 0.8)', 'rgba(13, 202, 240, 0.8)', 'rgba(25, 135, 84, 0.8)'],
-                    borderColor: ['rgb(13, 110, 253)', 'rgb(13, 202, 240)', 'rgb(25, 135, 84)'],
+                    data: [
+                        {{ taskMetrics.basicMetrics.taskCompletionRate|default(0) }},
+                        {{ taskMetrics.basicMetrics.onTimeCompletionRate|default(0) }},
+                        {{ goalMetrics.completionRate|default(0) }}
+                    ],
+                    backgroundColor: [
+                        'rgba(13, 110, 253, 0.8)',
+                        'rgba(13, 202, 240, 0.8)',
+                        'rgba(25, 135, 84, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(13, 110, 253)',
+                        'rgb(13, 202, 240)',
+                        'rgb(25, 135, 84)'
+                    ],
                     borderWidth: 2
                 }]
             },
@@ -488,23 +474,50 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    x: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
                 },
                 plugins: {
                     legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => ctx.parsed.x.toFixed(1) + '%' } }
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.x.toFixed(1) + '%';
+                            }
+                        }
+                    }
                 }
             }
         });
+
+        const completedGoals = {{ goalMetrics.completedGoals|default(0) }};
+        const inProgressGoals = {{ goalMetrics.inProgressGoals|default(0) }};
+        const totalGoals = {{ goalMetrics.totalGoals|default(0) }};
+        const notStartedGoals = totalGoals - completedGoals - inProgressGoals;
 
         new Chart(document.getElementById('goalStatusChart'), {
             type: 'pie',
             data: {
                 labels: ['Completed', 'In Progress', 'Not Started'],
                 datasets: [{
-                    data: [{{ goalMetrics.completedGoals|default(0) }}, {{ goalMetrics.inProgressGoals|default(0) }}, {{ (goalMetrics.totalGoals|default(0)) - (goalMetrics.completedGoals|default(0)) - (goalMetrics.inProgressGoals|default(0)) }}],
-                    backgroundColor: ['rgba(25, 135, 84, 0.8)', 'rgba(13, 110, 253, 0.8)', 'rgba(108, 117, 125, 0.8)'],
-                    borderColor: ['rgb(25, 135, 84)', 'rgb(13, 110, 253)', 'rgb(108, 117, 125)'],
+                    data: [completedGoals, inProgressGoals, notStartedGoals],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.8)',
+                        'rgba(13, 110, 253, 0.8)',
+                        'rgba(108, 117, 125, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(25, 135, 84)',
+                        'rgb(13, 110, 253)',
+                        'rgb(108, 117, 125)'
+                    ],
                     borderWidth: 2
                 }]
             },
@@ -515,10 +528,9 @@
                     legend: { position: 'bottom' },
                     tooltip: {
                         callbacks: {
-                            label: ctx => {
-                                const total = {{ goalMetrics.totalGoals|default(0) }};
-                                const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
-                                return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                            label: function(context) {
+                                const percentage = totalGoals > 0 ? ((context.parsed / totalGoals) * 100).toFixed(1) : 0;
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
                             }
                         }
                     }
@@ -538,8 +550,16 @@
                         {{ taskMetrics.priorityMetrics.completionRateByPriority[2]|default(0) }},
                         {{ taskMetrics.priorityMetrics.completionRateByPriority[3]|default(0) }}
                     ],
-                    backgroundColor: ['rgba(13, 202, 240, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(220, 53, 69, 0.8)'],
-                    borderColor: ['rgb(13, 202, 240)', 'rgb(255, 193, 7)', 'rgb(220, 53, 69)'],
+                    backgroundColor: [
+                        'rgba(13, 202, 240, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(13, 202, 240)',
+                        'rgb(255, 193, 7)',
+                        'rgb(220, 53, 69)'
+                    ],
                     borderWidth: 2
                 }]
             },
@@ -547,11 +567,25 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
                 },
                 plugins: {
                     legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => 'Completion: ' + ctx.parsed.y.toFixed(1) + '%' } }
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Completion: ' + context.parsed.y.toFixed(1) + '%';
+                            }
+                        }
+                    }
                 }
             }
         });

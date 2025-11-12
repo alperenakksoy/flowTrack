@@ -45,6 +45,7 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/weekly/{id}', name: 'performance_weekly', requirements: ['id' => '\d+'])]
     public function weeklyPerformance(Request $request, int $id): Response
     {
+
         /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
@@ -58,7 +59,7 @@ class PerformanceReportController extends AbstractController
             throw $this->createNotFoundException('User not found');
         }
 
-        //        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
+        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
 
         $week = $request->query->getInt('week', (int) date('W'));
         $year = $request->query->getInt('year', (int) date('Y'));
@@ -111,6 +112,9 @@ class PerformanceReportController extends AbstractController
 
         $targetUser = $this->userRepository->find($id);
 
+        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
+
+
         if (!$targetUser) {
             throw $this->createNotFoundException('User not found');
         }
@@ -141,6 +145,8 @@ class PerformanceReportController extends AbstractController
         }
 
         $targetUser = $this->userRepository->find($id);
+
+        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
 
         if (!$targetUser) {
             throw $this->createNotFoundException('User not found');
@@ -201,7 +207,7 @@ class PerformanceReportController extends AbstractController
                 'taskMetrics' => $weeklyPerformance['taskMetrics'],
                 'goalMetrics' => $weeklyPerformance['goalMetrics'],
             ],
-            'isPdfDownload' => true
+            'isPdfDownload' => true,
         ]);
 
         return new Response(
@@ -211,8 +217,110 @@ class PerformanceReportController extends AbstractController
             ]),
             200,
             [
-                'Content-Type'        => 'application/pdf',
+                'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="weekly-performance-report-'.$targetUser->getId().'-W'.$week.'-'.$year.'.pdf"',
+            ]
+        );
+    }
+
+    #[Route('/performance/monthly/{id}/download', name: 'performance_monthly_download', requirements: ['id' => '\d+'])]
+    public function downloadMonthlyPerformance(int $id): Response
+    {
+        /** @var User|null $loggedInUser */
+        $loggedInUser = $this->getUser();
+
+        if (!$loggedInUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $targetUser = $this->userRepository->find($id);
+
+        if (!$targetUser) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
+            throw $this->createAccessDeniedException('You cannot view this performance report.');
+        }
+
+        $monthlyScore = $this->scoringService->calculateOverallScore($targetUser, 'month');
+        $monthlyMetrics = $this->scoringService->taskPerformanceScore($targetUser, 'month');
+
+        $html = $this->renderView('performance/monthly_pdf.html.twig', [
+            'targetUser' => $targetUser,
+            'isOwnPerformance' => $loggedInUser->getId() === $targetUser->getId(),
+            'score' => $monthlyScore,
+            'metrics' => $monthlyMetrics,
+            'isPdfDownload' => true,
+        ]);
+
+        $currentMonth = date('F-Y');
+        $filename = sprintf(
+            'monthly-performance-report-%s-%s.pdf',
+            $targetUser->getId(),
+            $currentMonth
+        );
+
+        return new Response(
+            $this->pdf->getOutputFromHtml($html, [
+                'enable-javascript' => false,
+                'enable-local-file-access' => true,
+            ]),
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            ]
+        );
+    }
+
+    #[Route('/performance/overall/{id}/download', name: 'performance_overall_download', requirements: ['id' => '\d+'])]
+    public function downloadOverallPerformance(int $id): Response
+    {
+        /** @var User|null $loggedInUser */
+        $loggedInUser = $this->getUser();
+
+        if (!$loggedInUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $targetUser = $this->userRepository->find($id);
+
+        if (!$targetUser) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
+            throw $this->createAccessDeniedException('You cannot view this performance report.');
+        }
+
+        $overallScore = $this->scoringService->calculateOverallScore($targetUser, 'all');
+        $overallMetrics = $this->scoringService->taskPerformanceScore($targetUser, 'all');
+
+        $html = $this->renderView('performance/overall_pdf.html.twig', [
+            'targetUser' => $targetUser,
+            'isOwnPerformance' => $loggedInUser->getId() === $targetUser->getId(),
+            'score' => $overallScore,
+            'metrics' => $overallMetrics,
+            'isPdfDownload' => true,
+        ]);
+
+        $currentDate = date('Y-m-d');
+        $filename = sprintf(
+            'overall-performance-report-%s-%s.pdf',
+            $targetUser->getId(),
+            $currentDate
+        );
+
+        return new Response(
+            $this->pdf->getOutputFromHtml($html, [
+                'enable-javascript' => false,
+                'enable-local-file-access' => true,
+            ]),
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             ]
         );
     }

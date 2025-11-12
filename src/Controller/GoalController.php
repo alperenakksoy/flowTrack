@@ -92,6 +92,8 @@ class GoalController extends AbstractController
             throw $this->createNotFoundException('Goal not found');
         }
 
+        $this->denyAccessUnlessGranted(Permissions::VIEW, Goal::class);
+
         return $this->render('goal/show.html.twig', [
             'goal' => $goal,
         ]);

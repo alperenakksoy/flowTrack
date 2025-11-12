@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Performance Report - {{ targetUser.email }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #0d6efd;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6c757d;
+            font-size: 16px;
+        }
+
+        .score-hero {
+            background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .score-hero h2 {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .score-hero .score {
+            font-size: 72px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .score-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .score-breakdown {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .score-item {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .score-item .label {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .score-item .value {
+            font-size: 42px;
+            font-weight: bold;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-card .label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .metric-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .metric-card.primary .value { color: #0d6efd; }
+        .metric-card.success .value { color: #198754; }
+        .metric-card.warning .value { color: #ffc107; }
+        .metric-card.info .value { color: #0dcaf0; }
+
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #212529;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .performance-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .performance-card h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #212529;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+
+        .stat-row.primary { background: #cfe2ff; }
+        .stat-row.success { background: #d1e7dd; }
+        .stat-row.warning { background: #fff3cd; }
+        .stat-row.info { background: #cff4fc; }
+
+        .stat-row .label {
+            font-weight: 600;
+        }
+
+        .stat-row .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stat-row.primary .value { color: #0d6efd; }
+        .stat-row.success .value { color: #198754; }
+        .stat-row.warning .value { color: #ffc107; }
+        .stat-row.info .value { color: #0dcaf0; }
+
+        .progress-bar-container {
+            margin-top: 20px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0d6efd;
+            transition: width 0.3s;
+        }
+
+        .progress-fill.success { background: #198754; }
+
+        .time-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .time-metric {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .time-metric.info { background: #cff4fc; }
+        .time-metric.primary { background: #cfe2ff; }
+        .time-metric.danger { background: #f8d7da; }
+        .time-metric.success { background: #d1e7dd; }
+
+        .time-metric .label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .time-metric .value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .time-metric.info .value { color: #055160; }
+        .time-metric.primary .value { color: #084298; }
+        .time-metric.danger .value { color: #842029; }
+        .time-metric.success .value { color: #0f5132; }
+
+        .time-metric .subtext {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .summary-card {
+            padding: 25px;
+            border-radius: 8px;
+            border: 2px solid;
+        }
+
+        .summary-card.wins {
+            background: #d1e7dd;
+            border-color: #198754;
+        }
+
+        .summary-card.focus {
+            background: #cfe2ff;
+            border-color: #0d6efd;
+        }
+
+        .summary-card h4 {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card.wins h4 { color: #0f5132; }
+        .summary-card.focus h4 { color: #084298; }
+
+        .summary-card ul {
+            list-style: none;
+        }
+
+        .summary-card li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .summary-card li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .summary-card.wins li:before { color: #198754; }
+        .summary-card.focus li:before { color: #0d6efd; }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+{% set taskBasics = taskMetrics.basicMetrics %}
+{% set taskTime = taskMetrics.timeMetrics %}
+{% set goalMets = goalMetrics %}
+
+<div class="container">
+    <div class="header">
+        <h1>Weekly Performance Report</h1>
+        <p>
+            {% if isOwnPerformance %}
+                Your Performance - Week {{ week }} - {{ year }}
+            {% else %}
+                {{ targetUser.email }}'s Performance - Week {{ week }} - {{ year }}
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="score-hero">
+        <h2>Combined Weekly Performance Score</h2>
+        <div class="score">{{ combinedScore|number_format(1) }}%</div>
+
+        {% set scoreLevel = combinedScore %}
+        <div class="score-badge">
+            {% if scoreLevel >= 90 %}
+                🌟 Outstanding Week
+            {% elseif scoreLevel >= 75 %}
+                👍 Strong Week
+            {% elseif scoreLevel >= 60 %}
+                ⚠️ Developing Week
+            {% else %}
+                📈 Growth Opportunity
+            {% endif %}
+        </div>
+
+        <div class="score-breakdown">
+            <div class="score-item">
+                <div class="label">Task Performance</div>
+                <div class="value">{{ taskScore|number_format(1) }}%</div>
+            </div>
+            <div class="score-item">
+                <div class="label">Goal Performance</div>
+                <div class="value">{{ goalScore|number_format(1) }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">📊 Key Metrics Overview</h2>
+        <div class="metrics-grid">
+            <div class="metric-card primary">
+                <div class="label">Total Tasks</div>
+                <div class="value">{{ taskBasics.totalTasksInPeriod }}</div>
+            </div>
+            <div class="metric-card success">
+                <div class="label">Completed</div>
+                <div class="value">{{ taskBasics.completedTasks }}</div>
+            </div>
+            <div class="metric-card warning">
+                <div class="label">Open/In Progress</div>
+                <div class="value">{{ taskBasics.openTasks }}</div>
+            </div>
+            <div class="metric-card primary">
+                <div class="label">Completion Rate</div>
+                <div class="value">{{ taskBasics.taskCompletionRate|number_format(1) }}%</div>
+            </div>
+            <div class="metric-card info">
+                <div class="label">On-Time Rate</div>
+                <div class="value">{{ taskBasics.onTimeCompletionRate }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">📋 Performance Breakdown</h2>
+        <div class="performance-grid">
+            <div class="performance-card">
+                <h3>📋 Task Performance</h3>
+
+                <div class="stat-row primary">
+                    <span class="label">Total Tasks</span>
+                    <span class="value">{{ taskBasics.totalTasksInPeriod }}</span>
+                </div>
+
+                <div class="stat-row success">
+                    <span class="label">Completed</span>
+                    <span class="value">{{ taskBasics.completedTasks }}</span>
+                </div>
+
+                <div class="stat-row warning">
+                    <span class="label">Open/In Progress</span>
+                    <span class="value">{{ taskBasics.openTasks }}</span>
+                </div>
+
+                <div class="stat-row info">
+                    <span class="label">On-Time</span>
+                    <span class="value">{{ taskBasics.tasksCompletedOnTime }}</span>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-label">
+                        <span>Task Completion Progress</span>
+                        <span>{{ taskBasics.taskCompletionRate|number_format(1) }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ taskBasics.taskCompletionRate }}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="performance-card">
+                <h3>🎯 Goal Performance</h3>
+
+                <div class="stat-row warning">
+                    <span class="label">Total Goals</span>
+                    <span class="value">{{ goalMets.totalGoals }}</span>
+                </div>
+
+                <div class="stat-row success">
+                    <span class="label">Completed</span>
+                    <span class="value">{{ goalMets.completedGoals }}</span>
+                </div>
+
+                <div class="stat-row primary">
+                    <span class="label">In Progress</span>
+                    <span class="value">{{ goalMets.inProgressGoals }}</span>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-label">
+                        <span>Goal Completion Progress</span>
+                        <span>{{ goalMets.completionRate }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill success" style="width: {{ goalMets.completionRate }}%"></div>
+                    </div>
+                </div>
+
+                <div class="stat-row primary" style="margin-top: 20px;">
+                    <span class="label">Average Goal Progress</span>
+                    <span class="value">{{ goalMets.averageProgress }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">⏱️ Time Performance</h2>
+        <div class="time-metrics">
+            <div class="time-metric info">
+                <div class="label">On-Time Completion</div>
+                <div class="value">{{ taskBasics.onTimeCompletionRate }}%</div>
+                <div class="subtext">{{ taskBasics.tasksCompletedOnTime }} of {{ taskBasics.completedTasks }} tasks</div>
+            </div>
+
+            {% if taskTime.averageCompletionTime is defined and taskTime.averageCompletionTime %}
+                <div class="time-metric primary">
+                    <div class="label">Avg. Completion Time</div>
+                    <div class="value">{{ taskTime.averageCompletionTime|number_format(1) }}</div>
+                    <div class="subtext">hours per task</div>
+                </div>
+            {% endif %}
+
+            {% if taskTime.averageDelayHours is defined and taskTime.averageDelayHours %}
+                <div class="time-metric danger">
+                    <div class="label">Avg. Delay</div>
+                    <div class="value">{{ taskTime.averageDelayHours|number_format(1) }}</div>
+                    <div class="subtext">hours when delayed</div>
+                </div>
+            {% else %}
+                <div class="time-metric success">
+                    <div class="label">Avg. Delay</div>
+                    <div class="value">0</div>
+                    <div class="subtext">No delays recorded</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">💼 Weekly Summary</h2>
+        <div class="summary-grid">
+            <div class="summary-card wins">
+                <h4>✅ This Week's Wins</h4>
+                <ul>
+                    {% if combinedScore >= 80 %}
+                        <li>Excellent overall weekly performance</li>
+                    {% endif %}
+                    {% if taskBasics.taskCompletionRate >= 75 %}
+                        <li>Strong task completion ({{ taskBasics.taskCompletionRate|number_format(1) }}%)</li>
+                    {% endif %}
+                    {% if goalMets.completionRate >= 75 %}
+                        <li>Great goal achievement ({{ goalMets.completionRate }}%)</li>
+                    {% endif %}
+                    {% if taskBasics.onTimeCompletionRate >= 80 %}
+                        <li>Excellent time management this week</li>
+                    {% endif %}
+                    {% if taskBasics.openTasks == 0 %}
+                        <li>All tasks completed—no pending work!</li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="summary-card focus">
+                <h4>🎯 Focus for Next Week</h4>
+                <ul>
+                    {% if taskBasics.openTasks > 0 %}
+                        <li>Complete {{ taskBasics.openTasks }} pending task(s)</li>
+                    {% endif %}
+                    {% if taskBasics.taskCompletionRate < 75 %}
+                        <li>Improve task completion rate</li>
+                    {% endif %}
+                    {% if goalMets.completionRate < 75 %}
+                        <li>Focus on goal achievement</li>
+                    {% endif %}
+                    {% if taskBasics.onTimeCompletionRate < 80 %}
+                        <li>Work on timely task delivery</li>
+                    {% endif %}
+                    <li>Set clear priorities for the week ahead</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; {{ "now"|date("Y") }} FlowTrack. Generated on {{ "now"|date("F j, Y") }}</p>
+    </div>
+</div>
+</body>
+</html>

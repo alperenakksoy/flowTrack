@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\Permissions;
 use App\Service\ScoringService;
+use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +17,7 @@ class PerformanceReportController extends AbstractController
     public function __construct(
         private readonly ScoringService $scoringService,
         private readonly UserRepository $userRepository,
+        private readonly Pdf $pdf,
     ) {
     }
 
@@ -39,6 +41,7 @@ class PerformanceReportController extends AbstractController
 
         return false;
     }
+
     #[Route('/performance/weekly/{id}', name: 'performance_weekly', requirements: ['id' => '\d+'])]
     public function weeklyPerformance(Request $request, int $id): Response
     {
@@ -55,7 +58,7 @@ class PerformanceReportController extends AbstractController
             throw $this->createNotFoundException('User not found');
         }
 
-//        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
+        //        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
 
         $week = $request->query->getInt('week', (int) date('W'));
         $year = $request->query->getInt('year', (int) date('Y'));
@@ -126,6 +129,7 @@ class PerformanceReportController extends AbstractController
             'metrics' => $monthlyMetrics,
         ]);
     }
+
     #[Route('/performance/overall/{id}', name: 'performance_overall', requirements: ['id' => '\d+'])]
     public function overallPerformance(int $id): Response
     {
@@ -155,5 +159,61 @@ class PerformanceReportController extends AbstractController
             'score' => $overallScore,
             'metrics' => $overallMetrics,
         ]);
+    }
+
+    #[Route('/performance/weekly/{id}/download', name: 'performance_weekly_download', requirements: ['id' => '\d+'])]
+    public function downloadWeeklyPerformance(Request $request, int $id): Response
+    {
+        /** @var User|null $loggedInUser */
+        $loggedInUser = $this->getUser();
+
+        if (!$loggedInUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $targetUser = $this->userRepository->find($id);
+
+        if (!$targetUser) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
+            throw $this->createAccessDeniedException('You cannot view this performance report.');
+        }
+
+        $week = $request->query->getInt('week', (int) date('W'));
+        $year = $request->query->getInt('year', (int) date('Y'));
+
+        $weeklyPerformance = $this->scoringService->getWeeklyPerformanceScore($targetUser, $week, $year);
+
+        $html = $this->renderView('performance/weekly_pdf.html.twig', [
+            'targetUser' => $targetUser,
+            'isOwnPerformance' => $loggedInUser->getId() === $targetUser->getId(),
+            'week' => $weeklyPerformance['week'],
+            'year' => $weeklyPerformance['year'],
+            'taskScore' => $weeklyPerformance['taskScore'],
+            'goalScore' => $weeklyPerformance['goalScore'],
+            'combinedScore' => $weeklyPerformance['combinedScore'],
+            'score' => $weeklyPerformance['combinedScore'],
+            'taskMetrics' => $weeklyPerformance['taskMetrics'],
+            'goalMetrics' => $weeklyPerformance['goalMetrics'],
+            'metrics' => [
+                'taskMetrics' => $weeklyPerformance['taskMetrics'],
+                'goalMetrics' => $weeklyPerformance['goalMetrics'],
+            ],
+            'isPdfDownload' => true
+        ]);
+
+        return new Response(
+            $this->pdf->getOutputFromHtml($html, [
+                'enable-javascript' => false,
+                'enable-local-file-access' => true,
+            ]),
+            200,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="weekly-performance-report-'.$targetUser->getId().'-W'.$week.'-'.$year.'.pdf"',
+            ]
+        );
     }
 }

@@ -24,7 +24,7 @@ class Goal
     #[ORM\Column(type: 'float')]
     private ?float $progress = 0.0;
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'goals')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'SET NULL')]
     private ?User $employee = null;
 
     #[ORM\Column(type: 'integer')]
@@ -39,7 +39,7 @@ class Goal
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $unit = null; // e.g., 'hours', 'items', 'percentage'
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'createdGoals')]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $createdBy = null;
 
     #[ORM\Column(type: 'datetime_immutable')]

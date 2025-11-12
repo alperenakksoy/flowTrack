@@ -21,27 +21,6 @@ class PerformanceReportController extends AbstractController
     ) {
     }
 
-    private function canViewPerformance(User $loggedInUser, User $targetUser): bool
-    {
-        if ($loggedInUser->getId() === $targetUser->getId()) {
-            return true;
-        }
-
-        if ($this->isGranted('ROLE_ADMIN')) {
-            return true;
-        }
-
-        if ($this->isGranted('ROLE_MANAGER')) {
-            if (null !== $loggedInUser->getTeam()
-                && null !== $targetUser->getTeam()
-                && $loggedInUser->getTeam()->getId() === $targetUser->getTeam()->getId()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     #[Route('/performance/weekly/{id}', name: 'performance_weekly', requirements: ['id' => '\d+'])]
     public function weeklyPerformance(Request $request, int $id): Response
     {
@@ -119,10 +98,6 @@ class PerformanceReportController extends AbstractController
             throw $this->createNotFoundException('User not found');
         }
 
-        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
-            throw $this->createAccessDeniedException('You cannot view this user\'s performance');
-        }
-
         $monthlyScore = $this->scoringService->calculateOverallScore($targetUser, 'month');
         $monthlyMetrics = $this->scoringService->taskPerformanceScore($targetUser, 'month');
 
@@ -152,10 +127,6 @@ class PerformanceReportController extends AbstractController
             throw $this->createNotFoundException('User not found');
         }
 
-        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
-            throw $this->createAccessDeniedException('You cannot view this user\'s performance');
-        }
-
         $overallScore = $this->scoringService->calculateOverallScore($targetUser, 'all');
         $overallMetrics = $this->scoringService->taskPerformanceScore($targetUser, 'all');
 
@@ -181,10 +152,6 @@ class PerformanceReportController extends AbstractController
 
         if (!$targetUser) {
             throw $this->createNotFoundException('User not found');
-        }
-
-        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
-            throw $this->createAccessDeniedException('You cannot view this performance report.');
         }
 
         $week = $request->query->getInt('week', (int) date('W'));
@@ -239,10 +206,6 @@ class PerformanceReportController extends AbstractController
             throw $this->createNotFoundException('User not found');
         }
 
-        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
-            throw $this->createAccessDeniedException('You cannot view this performance report.');
-        }
-
         $monthlyScore = $this->scoringService->calculateOverallScore($targetUser, 'month');
         $monthlyMetrics = $this->scoringService->taskPerformanceScore($targetUser, 'month');
 
@@ -288,10 +251,6 @@ class PerformanceReportController extends AbstractController
 
         if (!$targetUser) {
             throw $this->createNotFoundException('User not found');
-        }
-
-        if (!$this->canViewPerformance($loggedInUser, $targetUser)) {
-            throw $this->createAccessDeniedException('You cannot view this performance report.');
         }
 
         $overallScore = $this->scoringService->calculateOverallScore($targetUser, 'all');

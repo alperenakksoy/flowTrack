@@ -25,11 +25,11 @@ class Task
     private ?string $status = 'open'; // open, in_progress, closed, cancelled
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'assignedTasks')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'SET NULL')]
     private ?User $assignedTo = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'createdTasks')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'SET NULL')]
     private ?User $createdBy = null;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]

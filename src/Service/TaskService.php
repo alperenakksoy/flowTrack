@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
+use App\Entity\Task;
 use App\Entity\User;
 use App\Repository\TaskRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class TaskService extends AbstractController
@@ -13,7 +13,9 @@ class TaskService extends AbstractController
     {
     }
 
-    // all tasks of the team that manager can see
+    /**
+     * @return Task[]
+     */
     public function getTeamTasks(User $user): array
     {
         $team = $user->getTeam();
@@ -21,6 +23,11 @@ class TaskService extends AbstractController
             throw $this->createNotFoundException('No Team found');
         }
 
-        return $this->taskRepository->findTeamTasks($team->getId());
+        $teamId = $team->getId();
+        if (null === $teamId) {
+            throw $this->createNotFoundException('Team ID not found');
+        }
+
+        return $this->taskRepository->findTeamTasks($teamId);
     }
 }

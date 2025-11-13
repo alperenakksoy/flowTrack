@@ -16,6 +16,9 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
+/**
+ * @extends AbstractAdmin<Goal>
+ */
 class GoalAdmin extends AbstractAdmin
 {
     protected function configureListFields(ListMapper $list): void
@@ -123,12 +126,10 @@ class GoalAdmin extends AbstractAdmin
         ;
     }
 
-    /**
-     * @param object $object
-     * @return void object
-     */
     public function preUpdate(object $object): void
     {
-        $object->setUpdatedAt(new \DateTimeImmutable());
+        if ($object instanceof Goal) {
+            $object->setUpdatedAt(new \DateTimeImmutable());
+        }
     }
 }

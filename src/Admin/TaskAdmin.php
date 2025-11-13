@@ -14,6 +14,9 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
+/**
+ * @extends AbstractAdmin<Task>
+ */
 class TaskAdmin extends AbstractAdmin
 {
     protected function configureListFields(ListMapper $list): void

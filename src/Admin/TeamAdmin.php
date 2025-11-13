@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use App\Entity\Team;
 use App\Entity\User;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
@@ -11,6 +12,9 @@ use Sonata\AdminBundle\Show\ShowMapper;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
+/**
+ * @extends AbstractAdmin<Team>
+ */
 class TeamAdmin extends AbstractAdmin
 {
     protected function configureFormFields(FormMapper $form): void
@@ -68,14 +72,13 @@ class TeamAdmin extends AbstractAdmin
             ])
         ;
     }
+
     protected function configureShowFields(ShowMapper $show): void
     {
         $show
             ->add('id')
             ->add('team_name')
             ->add('manager')
-            ;
+        ;
     }
-
-
 }

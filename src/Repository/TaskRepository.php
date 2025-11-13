@@ -17,8 +17,12 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
+    /**
+     * @return array{total: int|string, openTasks: int|string, onGoingTasks: int|string, completedTasks: int|string, cancelledTasks: int|string}
+     */
     public function getUserTaskStats(User $user): array
     {
+        /* @var array{total: int|string, openTasks: int|string, onGoingTasks: int|string, completedTasks: int|string, cancelledTasks: int|string} */
         return $this->createQueryBuilder('t')
             ->select(
                 'COUNT(t.id) as total',
@@ -33,8 +37,14 @@ class TaskRepository extends ServiceEntityRepository
             ->getSingleResult();
     }
 
-    public function findTeamTasks($teamId)
+    /**
+     * @param int|string $teamId
+     *
+     * @return Task[]
+     */
+    public function findTeamTasks($teamId): array
     {
+        /* @var Task[] */
         return $this->createQueryBuilder('t')
             ->select('t')
             ->join('t.createdBy', 'u')
@@ -45,8 +55,12 @@ class TaskRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Task[]
+     */
     public function getUserCompletedTasks(User $user): array
     {
+        /* @var Task[] */
         return $this->createQueryBuilder('t')
             ->select('t')
             ->where('t.status = :status')
@@ -58,8 +72,12 @@ class TaskRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Task[]
+     */
     public function getUserInProgressTasks(User $user): array
     {
+        /* @var Task[] */
         return $this->createQueryBuilder('t')
             ->select('t')
             ->where('t.status = :status')
@@ -71,8 +89,12 @@ class TaskRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Task[]
+     */
     public function getUserCancelledTasks(User $user): array
     {
+        /* @var Task[] */
         return $this->createQueryBuilder('t')
             ->select('t')
             ->where('t.status = :status')
@@ -98,6 +120,9 @@ class TaskRepository extends ServiceEntityRepository
         return null !== $result ? (float) $result : null;
     }
 
+    /**
+     * @return Task[]
+     */
     public function getUserCompletedTasksInPeriod(
         User $user,
         ?\DateTimeImmutable $startDate = null,
@@ -120,11 +145,15 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('endDate', $endDate);
         }
 
+        /* @var Task[] */
         return $qb->orderBy('t.completedAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
 
+    /**
+     * @return Task[]
+     */
     public function getOpenTasksInPeriod(
         User $user,
         ?\DateTimeImmutable $startDate = null,
@@ -146,9 +175,13 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('endDate', $endDate);
         }
 
+        /* @var Task[] */
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * @return Task[]
+     */
     public function getTaskCompletedOnTime(
         User $user,
         ?\DateTimeImmutable $startDate = null,
@@ -172,6 +205,7 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('endDate', $endDate);
         }
 
+        /* @var Task[] */
         return $qb->orderBy('t.completedAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -180,7 +214,7 @@ class TaskRepository extends ServiceEntityRepository
     public function getAverageCompletionTime(
         User $user,
         ?\DateTimeImmutable $startDate = null,
-        ?\DateTimeImmutable $endDate = null
+        ?\DateTimeImmutable $endDate = null,
     ): ?float {
         $qb = $this->createQueryBuilder('t')
             ->where('t.assignedTo = :user')
@@ -199,6 +233,7 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('endDate', $endDate);
         }
 
+        /** @var Task[] */
         $tasks = $qb->getQuery()->getResult();
 
         if (0 === count($tasks)) {
@@ -219,7 +254,7 @@ class TaskRepository extends ServiceEntityRepository
     public function getAverageDelayHours(
         User $user,
         ?\DateTimeImmutable $startDate = null,
-        ?\DateTimeImmutable $endDate = null
+        ?\DateTimeImmutable $endDate = null,
     ): ?float {
         $qb = $this->createQueryBuilder('t')
             ->where('t.assignedTo = :user')
@@ -239,6 +274,7 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('endDate', $endDate);
         }
 
+        /** @var Task[] */
         $tasks = $qb->getQuery()->getResult();
 
         if (0 === count($tasks)) {
@@ -257,6 +293,9 @@ class TaskRepository extends ServiceEntityRepository
         return $totalDelayHours / count($tasks);
     }
 
+    /**
+     * @return array<int, array{priority: int|string, totalTasks: int|string, completedTasks: int|string, cancelledTasks: int|string, inProgressTasks: int|string, successRate: float|string}>
+     */
     public function getSuccessRateByPriority(
         User $user,
         ?\DateTimeImmutable $startDate = null,
@@ -291,6 +330,7 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('activeStatuses', ['open', 'in_progress']);
         }
 
+        /* @var array<int, array{priority: int|string, totalTasks: int|string, completedTasks: int|string, cancelledTasks: int|string, inProgressTasks: int|string, successRate: float|string}> */
         return $qb->getQuery()->getResult();
     }
 
@@ -322,15 +362,22 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('activeStatuses', ['open', 'in_progress']);
         }
 
+        /** @var array{total: int|string, completed: int|string} */
         $result = $qb->getQuery()->getSingleResult();
 
-        if (0 == $result['total']) {
+        $total = is_numeric($result['total']) ? (int) $result['total'] : 0;
+        $completed = is_numeric($result['completed']) ? (int) $result['completed'] : 0;
+
+        if (0 === $total) {
             return null;
         }
 
-        return ($result['completed'] / $result['total']) * 100;
+        return ($completed / $total) * 100;
     }
 
+    /**
+     * @return array<int, array{priority: int|string, status: string, count: int|string}>
+     */
     public function getTaskStatusByPriority(
         User $user,
         ?\DateTimeImmutable $startDate = null,
@@ -359,6 +406,7 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('activeStatuses', ['open', 'in_progress']);
         }
 
+        /* @var array<int, array{priority: int|string, status: string, count: int|string}> */
         return $qb->getQuery()->getResult();
     }
 
@@ -390,13 +438,13 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('activeStatuses', ['open', 'in_progress']);
         }
 
-        $total = $qb->getQuery()->getSingleScalarResult();
+        $totalResult = $qb->getQuery()->getSingleScalarResult();
+        $total = is_numeric($totalResult) ? (int) $totalResult : 0;
 
-        if (0 == $total) {
+        if (0 === $total) {
             return null;
         }
 
-        // Get completed tasks of this priority in period
         $qb2 = $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->where('t.assignedTo = :user')
@@ -416,7 +464,8 @@ class TaskRepository extends ServiceEntityRepository
                 ->setParameter('endDate', $endDate);
         }
 
-        $completed = $qb2->getQuery()->getSingleScalarResult();
+        $completedResult = $qb2->getQuery()->getSingleScalarResult();
+        $completed = is_numeric($completedResult) ? (int) $completedResult : 0;
 
         return ($completed / $total) * 100;
     }

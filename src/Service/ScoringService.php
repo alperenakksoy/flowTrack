@@ -6,20 +6,20 @@ use App\Entity\User;
 use App\Repository\GoalRepository;
 use App\Repository\TaskRepository;
 
-class ScoringService
+readonly class ScoringService
 {
     public function __construct(
-        private readonly TaskRepository $taskRepository,
-        private readonly GoalRepository $goalRepository,
+        private TaskRepository $taskRepository,
+        private GoalRepository $goalRepository,
     ) {
     }
 
     /**
-     * Get a performance score for a specific time period.
-     *
      * @param string   $period 'week'|'month'|'quarter'|'all'
      * @param int|null $week   Week number (for weekly)
      * @param int|null $year   Year
+     *
+     * @return array{period: array{type: string, week: int|null, year: int|null, startDate: string|null, endDate: string|null}, basicMetrics: array{totalTasksInPeriod: int, completedTasks: int, openTasks: int, taskCompletionRate: float, onTimeCompletionRate: float, tasksCompletedOnTime: int}, timeMetrics: array{averageCompletionTime: float|null, averageDelayHours: float|null}, priorityMetrics: array{successRateByPriority: array<int, array<string, mixed>>, highPrioritySuccessRate: float|null, statusByPriority: array<int, array<string, mixed>>, completionRateByPriority: array<int, float|null>}}
      */
     public function taskPerformanceScore(
         User $employee,
@@ -90,7 +90,7 @@ class ScoringService
 
         $highPrioritySuccessRate = $this->taskRepository->getHighPrioritySuccessRate(
             $employee,
-            1,
+            3,
             $dateRange['start'],
             $dateRange['end']
         );
@@ -152,7 +152,7 @@ class ScoringService
     }
 
     /**
-     * Calculate date range based on period type.
+     * @return array{start: \DateTimeImmutable|null, end: \DateTimeImmutable|null}
      */
     private function getDateRange(string $period, ?int $week, ?int $year): array
     {
@@ -168,6 +168,9 @@ class ScoringService
         };
     }
 
+    /**
+     * @return array{start: \DateTimeImmutable, end: \DateTimeImmutable}
+     */
     private function getWeekRange(int $week, int $year): array
     {
         $dto = new \DateTime();
@@ -178,6 +181,9 @@ class ScoringService
         return ['start' => $start, 'end' => $end];
     }
 
+    /**
+     * @return array{start: \DateTimeImmutable, end: \DateTimeImmutable}
+     */
     private function getMonthRange(\DateTimeImmutable $date): array
     {
         $start = $date->modify('first day of this month 00:00:00');
@@ -186,6 +192,9 @@ class ScoringService
         return ['start' => $start, 'end' => $end];
     }
 
+    /**
+     * @return array{start: \DateTimeImmutable, end: \DateTimeImmutable}
+     */
     private function getQuarterRange(\DateTimeImmutable $date): array
     {
         $month = (int) $date->format('n');
@@ -196,23 +205,32 @@ class ScoringService
         $endMonth = $startMonth + 2;
 
         $start = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', "$year-$startMonth-01 00:00:00");
-        $end = \DateTimeImmutable::createFromFormat('Y-m-d', "$year-$endMonth-01")
-            ->modify('last day of this month 23:59:59');
+        $endDateBase = \DateTimeImmutable::createFromFormat('Y-m-d', "$year-$endMonth-01");
 
-        return ['start' => $start, 'end' => $end];
-    }
+        if (false === $start || false === $endDateBase) {
+            throw new \RuntimeException('Failed to create DateTimeImmutable for quarter range');
+        }
 
-    private function getYearRange(int $year): array
-    {
-        $start = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', "$year-01-01 00:00:00");
-        $end = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', "$year-12-31 23:59:59");
+        $end = $endDateBase->modify('last day of this month 23:59:59');
 
         return ['start' => $start, 'end' => $end];
     }
 
     /**
-     * Calculate overall score with period support.
+     * @return array{start: \DateTimeImmutable, end: \DateTimeImmutable}
      */
+    private function getYearRange(int $year): array
+    {
+        $start = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', "$year-01-01 00:00:00");
+        $end = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', "$year-12-31 23:59:59");
+
+        if (false === $start || false === $end) {
+            throw new \RuntimeException('Failed to create DateTimeImmutable for year range');
+        }
+
+        return ['start' => $start, 'end' => $end];
+    }
+
     public function calculateOverallScore(
         User $employee,
         string $period = 'all',
@@ -249,8 +267,7 @@ class ScoringService
     }
 
     /**
-     * Get COMBINED performance score (Tasks + Goals)
-     * This is especially important for weekly evaluation.
+     * @return array{week: int, year: int, taskScore: float, goalScore: float, combinedScore: float, taskMetrics: array<string, mixed>, goalMetrics: array{totalGoals: int, completedGoals: int, inProgressGoals: int, averageProgress: float, completionRate: float}}
      */
     public function getWeeklyPerformanceScore(User $employee, ?int $week = null, ?int $year = null): array
     {
@@ -309,7 +326,7 @@ class ScoringService
         }
 
         $avgProgress = $totalProgress / count($goals);
-        $completionRate = (count($goals) > 0) ? ($completedGoals / count($goals)) * 100 : 0;
+        $completionRate = ($completedGoals / count($goals)) * 100;
 
         // 70% weight on average progress, 30% on completion rate
         return ($avgProgress * 0.7) + ($completionRate * 0.3);
@@ -317,6 +334,8 @@ class ScoringService
 
     /**
      * Get detailed goal metrics.
+     *
+     * @return array{totalGoals: int, completedGoals: int, inProgressGoals: int, averageProgress: float, completionRate: float}
      */
     private function getGoalMetrics(User $employee, int $week, int $year): array
     {

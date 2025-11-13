@@ -24,11 +24,9 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/weekly/{id}', name: 'performance_weekly', requirements: ['id' => '\d+'])]
     public function weeklyPerformance(Request $request, int $id): Response
     {
-
-        /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
-        if (!$loggedInUser) {
+        if (!$loggedInUser instanceof User) {
             return $this->redirectToRoute('app_login');
         }
 
@@ -68,7 +66,7 @@ class PerformanceReportController extends AbstractController
     {
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof User) {
             return $this->redirectToRoute('app_login');
         }
 
@@ -82,21 +80,19 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/monthly/{id}', name: 'performance_monthly', requirements: ['id' => '\d+'])]
     public function monthlyPerformance(int $id): Response
     {
-        /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
-        if (!$loggedInUser) {
+        if (!$loggedInUser instanceof User) {
             return $this->redirectToRoute('app_login');
         }
 
         $targetUser = $this->userRepository->find($id);
 
-        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
-
-
         if (!$targetUser) {
             throw $this->createNotFoundException('User not found');
         }
+
+        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
 
         $monthlyScore = $this->scoringService->calculateOverallScore($targetUser, 'month');
         $monthlyMetrics = $this->scoringService->taskPerformanceScore($targetUser, 'month');
@@ -112,20 +108,19 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/overall/{id}', name: 'performance_overall', requirements: ['id' => '\d+'])]
     public function overallPerformance(int $id): Response
     {
-        /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
-        if (!$loggedInUser) {
+        if (!$loggedInUser instanceof User) {
             return $this->redirectToRoute('app_login');
         }
 
         $targetUser = $this->userRepository->find($id);
 
-        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
-
         if (!$targetUser) {
             throw $this->createNotFoundException('User not found');
         }
+
+        $this->denyAccessUnlessGranted(Permissions::VIEW, $targetUser);
 
         $overallScore = $this->scoringService->calculateOverallScore($targetUser, 'all');
         $overallMetrics = $this->scoringService->taskPerformanceScore($targetUser, 'all');
@@ -141,10 +136,9 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/weekly/{id}/download', name: 'performance_weekly_download', requirements: ['id' => '\d+'])]
     public function downloadWeeklyPerformance(Request $request, int $id): Response
     {
-        /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
-        if (!$loggedInUser) {
+        if (!$loggedInUser instanceof User) {
             return $this->redirectToRoute('app_login');
         }
 
@@ -193,10 +187,9 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/monthly/{id}/download', name: 'performance_monthly_download', requirements: ['id' => '\d+'])]
     public function downloadMonthlyPerformance(int $id): Response
     {
-        /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
-        if (!$loggedInUser) {
+        if (!$loggedInUser instanceof User) {
             return $this->redirectToRoute('app_login');
         }
 
@@ -240,10 +233,9 @@ class PerformanceReportController extends AbstractController
     #[Route('/performance/overall/{id}/download', name: 'performance_overall_download', requirements: ['id' => '\d+'])]
     public function downloadOverallPerformance(int $id): Response
     {
-        /** @var User|null $loggedInUser */
         $loggedInUser = $this->getUser();
 
-        if (!$loggedInUser) {
+        if (!$loggedInUser instanceof User) {
             return $this->redirectToRoute('app_login');
         }
 

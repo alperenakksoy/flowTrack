@@ -8,6 +8,9 @@ class UserRole
     public const ROLE_MANAGER = 'ROLE_MANAGER';
     public const ROLE_ADMIN = 'ROLE_ADMIN';
 
+    /**
+     * @return array<string, string> Keys and values are strings
+     */
     public static function getChoices(): array
     {
         return [

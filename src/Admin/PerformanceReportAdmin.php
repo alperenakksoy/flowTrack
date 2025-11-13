@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use App\Entity\PerformanceReport;
 use App\Entity\User;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
@@ -13,6 +14,9 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
+/**
+ * @extends AbstractAdmin<PerformanceReport>
+ */
 class PerformanceReportAdmin extends AbstractAdmin
 {
     protected function configureFormFields(FormMapper $form): void
@@ -77,6 +81,4 @@ class PerformanceReportAdmin extends AbstractAdmin
             ])
         ;
     }
-
-
 }

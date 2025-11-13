@@ -37,8 +37,9 @@ class TaskController extends AbstractController
     #[IsGranted('ROLE_MANAGER')]
     public function update(EntityManagerInterface $em, Task $task, Request $request): Response
     {
-        /** @var User $manager */
         $manager = $this->getUser();
+        assert($manager instanceof User);
+
         $isNewTask = !$task->getId();
         $originalStatus = $task->getStatus();
         $originalAssignedTo = $task->getAssignedTo();
@@ -55,7 +56,7 @@ class TaskController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             if (!$task->getCreatedBy()) {
-                $task->setCreatedBy($this->getUser());
+                $task->setCreatedBy($manager);
             }
             $task->setUpdatedAt(new \DateTimeImmutable());
 
@@ -71,11 +72,14 @@ class TaskController extends AbstractController
                 $this->notificationService->sendTaskAssignedEmail($task, $task->getAssignedTo());
             }
 
-            if ('closed' === $task->getStatus() && 'closed' !== $originalStatus && $task->getCreatedBy()) {
+            if ('closed' === $task->getStatus() && 'closed' !== $originalStatus) {
                 $task->setCompletedAt(new \DateTimeImmutable());
                 $em->flush();
 
-                $this->notificationService->sendTaskCompletedEmail($task, $task->getCreatedBy());
+                $createdBy = $task->getCreatedBy();
+                if (null !== $createdBy) {
+                    $this->notificationService->sendTaskCompletedEmail($task, $createdBy);
+                }
             }
 
             $this->addFlash('success', 'Task saved successfully!');
@@ -112,14 +116,19 @@ class TaskController extends AbstractController
 
         return $this->redirectToRoute('dashboard');
     }
+
     #[Route('/task/start/{id}', name: 'task_start', methods: ['POST'])]
     public function start(Task $task, EntityManagerInterface $em, Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('start'.$task->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        $tokenString = is_string($token) ? $token : null;
+
+        if (!$this->isCsrfTokenValid('start'.$task->getId(), $tokenString)) {
             $this->addFlash('error', 'Invalid CSRF token.');
 
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
         }
+
         $this->denyAccessUnlessGranted(Permissions::EDIT, $task);
 
         if ('open' !== $task->getStatus()) {
@@ -138,7 +147,10 @@ class TaskController extends AbstractController
     #[Route('/task/complete/{id}', name: 'task_complete', methods: ['POST'])]
     public function complete(Task $task, EntityManagerInterface $em, Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('complete'.$task->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        $tokenString = is_string($token) ? $token : null;
+
+        if (!$this->isCsrfTokenValid('complete'.$task->getId(), $tokenString)) {
             $this->addFlash('error', 'Invalid CSRF token.');
 
             return $this->redirectToRoute('task_show', ['id' => $task->getId()]);
@@ -158,8 +170,9 @@ class TaskController extends AbstractController
 
         $em->flush();
 
-        if ($task->getCreatedBy()) {
-            $this->notificationService->sendTaskCompletedEmail($task, $task->getCreatedBy());
+        $createdBy = $task->getCreatedBy();
+        if (null !== $createdBy) {
+            $this->notificationService->sendTaskCompletedEmail($task, $createdBy);
         }
 
         $this->addFlash('success', 'Task completed successfully!');

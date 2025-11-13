@@ -11,7 +11,6 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
-
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -33,7 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 180)]
     #[Assert\NotBlank, Assert\Email]
-    private ?string $email = null;
+    private string $email = '';
 
     /**
      * @var list<string> The user roles
@@ -52,15 +51,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToOne(targetEntity: Team::class, inversedBy: 'members')]
     protected ?Team $team = null;
 
+    /**
+     * @var Collection<int, Task>
+     */
     #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'assignedTo')]
     protected Collection $assignedTasks;
 
+    /**
+     * @var Collection<int, Task>
+     */
     #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'createdBy')]
     protected Collection $createdTasks;
 
+    /**
+     * @var Collection<int, Goal>
+     */
     #[ORM\OneToMany(targetEntity: Goal::class, mappedBy: 'employee', cascade: ['persist', 'remove'])]
     private Collection $goals;
 
+    /**
+     * @var Collection<int, PerformanceReport>
+     */
     #[ORM\OneToMany(targetEntity: PerformanceReport::class, mappedBy: 'employee', cascade: ['persist', 'remove'])]
     private Collection $performanceReports;
 
@@ -117,14 +128,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        if (empty($this->email)) {
+            throw new \LogicException('User email is not set.');
+        }
+
+        return $this->email;
     }
 
     /**
@@ -133,7 +143,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -184,41 +193,65 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->team = $team;
     }
 
+    /**
+     * @return Collection<int, Task>
+     */
     public function getAssignedTasks(): Collection
     {
         return $this->assignedTasks;
     }
 
+    /**
+     * @param Collection<int, Task> $assignedTasks
+     */
     public function setAssignedTasks(Collection $assignedTasks): void
     {
         $this->assignedTasks = $assignedTasks;
     }
 
+    /**
+     * @return Collection<int, Task>
+     */
     public function getCreatedTasks(): Collection
     {
         return $this->createdTasks;
     }
 
+    /**
+     * @param Collection<int, Task> $createdTasks
+     */
     public function setCreatedTasks(Collection $createdTasks): void
     {
         $this->createdTasks = $createdTasks;
     }
 
+    /**
+     * @return Collection<int, Goal>
+     */
     public function getGoals(): Collection
     {
         return $this->goals;
     }
 
+    /**
+     * @param Collection<int, Goal> $goals
+     */
     public function setGoals(Collection $goals): void
     {
         $this->goals = $goals;
     }
 
+    /**
+     * @return Collection<int, PerformanceReport>
+     */
     public function getPerformanceReports(): Collection
     {
         return $this->performanceReports;
     }
 
+    /**
+     * @param Collection<int, PerformanceReport> $performanceReports
+     */
     public function setPerformanceReports(Collection $performanceReports): void
     {
         $this->performanceReports = $performanceReports;
@@ -244,25 +277,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->updatedAt = $updatedAt;
     }
 
-    /**
-     * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
-     */
     public function __serialize(): array
     {
         $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+        $data["\0".self::class."\0password"] = hash('crc32c', $this->password ?? '');
 
         return $data;
-    }
-
-    #[\Deprecated]
-    public function eraseCredentials(): void
-    {
-        // @deprecated, to be removed when upgrading to Symfony 8
     }
 
     public function __toString(): string
     {
         return $this->firstName.' '.$this->lastName;
+    }
+
+    public function eraseCredentials(): void
+    {
     }
 }

@@ -24,6 +24,9 @@ class Team
     #[ORM\JoinColumn(name: 'manager_id', nullable: true, onDelete: 'SET NULL')]
     private ?User $manager = null;
 
+    /**
+     * @var Collection<int, User>
+     */
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'team')]
     private Collection $members;
 
@@ -68,15 +71,22 @@ class Team
         $this->manager = $manager;
     }
 
+    /**
+     * @return Collection<int, User>
+     */
     public function getMembers(): Collection
     {
         return $this->members;
     }
 
+    /**
+     * @param Collection<int, User> $members
+     */
     public function setMembers(Collection $members): void
     {
         $this->members = $members;
     }
+
     public function addMember(User $member): void
     {
         if (!$this->members->contains($member)) {
@@ -84,6 +94,7 @@ class Team
             $member->setTeam($this);
         }
     }
+
     public function removeMember(User $member): void
     {
         if ($this->members->contains($member)) {
@@ -91,6 +102,7 @@ class Team
             $member->setTeam(null);
         }
     }
+
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -103,6 +115,6 @@ class Team
 
     public function __toString(): string
     {
-        return $this->getTeamName();
+        return $this->getTeamName() ?? '';
     }
 }

@@ -37,14 +37,11 @@ class GoalController extends AbstractController
     #[IsGranted('ROLE_MANAGER')]
     public function update(EntityManagerInterface $em, Goal $goal, Request $request): Response
     {
-        /** @var User $manager */
         $manager = $this->getUser();
+        assert($manager instanceof User);
 
-        if (!$goal->getId()) {
-            $this->denyAccessUnlessGranted(Permissions::EDIT, Goal::class);
-        }
-        if (!$manager) {
-            return $this->redirectToRoute('app_login');
+        if ($goal->getId()) {
+            $this->denyAccessUnlessGranted(Permissions::EDIT, $goal);
         }
 
         $form = $this->createForm(GoalType::class, $goal, [
@@ -54,16 +51,22 @@ class GoalController extends AbstractController
             'label' => $goal->getId() ? 'Update' : 'Create',
         ]);
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
+            $isNewGoal = !$goal->getId();
+
             if (!$goal->getCreatedBy()) {
-                $goal->setCreatedBy($this->getUser());
+                $goal->setCreatedBy($manager);
             }
             $goal->setUpdatedAt(new \DateTimeImmutable());
             $em->persist($goal);
             $em->flush();
 
-            if (!$goal->getId()) {
-                $this->notificationService->sendGoalAssignedEmail($goal, $goal->getEmployee());
+            if ($isNewGoal) {
+                $employee = $goal->getEmployee();
+                if (null !== $employee) {
+                    $this->notificationService->sendGoalAssignedEmail($goal, $employee);
+                }
             }
 
             return $this->redirectToRoute('goal_show', ['id' => $goal->getId()]);
@@ -92,7 +95,7 @@ class GoalController extends AbstractController
             throw $this->createNotFoundException('Goal not found');
         }
 
-        $this->denyAccessUnlessGranted(Permissions::VIEW, Goal::class);
+        $this->denyAccessUnlessGranted(Permissions::VIEW, $goal);
 
         return $this->render('goal/show.html.twig', [
             'goal' => $goal,

@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use App\Entity\Goal;
+use App\Entity\Task;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Repository\GoalRepository;
 use App\Repository\TaskRepository;
@@ -16,6 +19,9 @@ class DashboardService
     ) {
     }
 
+    /**
+     * @return array{taskStatistics: array<string, int|float>, goalStatistics: array<string, mixed>, tasks: array<int, array<string, mixed>>, goals: array<int, array<string, mixed>>}
+     */
     public function getDashboardData(User $user): array
     {
         return [
@@ -26,6 +32,9 @@ class DashboardService
         ];
     }
 
+    /**
+     * @return array{team: array<int, array<string, mixed>>}
+     */
     public function getManagerDashboardData(User $manager): array
     {
         return [
@@ -33,24 +42,33 @@ class DashboardService
         ];
     }
 
+    /**
+     * @return array{totalTasks: int, openTasks: int, onGoingTasks: int, completedTasks: int, cancelledTasks: int, taskCompletionRate: float}
+     */
     private function getTaskStatistics(User $user): array
     {
         $taskStats = $this->taskRepository->getUserTaskStats($user);
 
-        $taskCompletionRate = $taskStats['total'] > 0
-            ? round(($taskStats['completedTasks'] / $taskStats['total']) * 100, 2)
+        $total = is_numeric($taskStats['total']) ? (int) $taskStats['total'] : 0;
+        $completedTasks = is_numeric($taskStats['completedTasks']) ? (int) $taskStats['completedTasks'] : 0;
+
+        $taskCompletionRate = $total > 0
+            ? round(($completedTasks / $total) * 100, 2)
             : 0;
 
         return [
-            'totalTasks' => (int) $taskStats['total'],
-            'openTasks' => (int) $taskStats['openTasks'],
-            'onGoingTasks' => (int) $taskStats['onGoingTasks'],
-            'completedTasks' => (int) $taskStats['completedTasks'],
-            'cancelledTasks' => (int) $taskStats['cancelledTasks'],
+            'totalTasks' => $total,
+            'openTasks' => is_numeric($taskStats['openTasks']) ? (int) $taskStats['openTasks'] : 0,
+            'onGoingTasks' => is_numeric($taskStats['onGoingTasks']) ? (int) $taskStats['onGoingTasks'] : 0,
+            'completedTasks' => $completedTasks,
+            'cancelledTasks' => is_numeric($taskStats['cancelledTasks']) ? (int) $taskStats['cancelledTasks'] : 0,
             'taskCompletionRate' => $taskCompletionRate,
         ];
     }
 
+    /**
+     * @return array{totalGoals: int, openGoals: int, inProgressGoals: int, completedGoals: int, cancelledGoals: int, completionRate: float, currentWeek: int, currentYear: int, weeklyGoals: array<int, array<string, mixed>>, AverageWeeklyProgress: float}
+     */
     private function getGoalStatistics(User $user): array
     {
         $currentWeek = (int) date('W');
@@ -86,6 +104,9 @@ class DashboardService
         ];
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     private function getUserTasks(User $user): array
     {
         $tasks = $this->taskRepository->findBy(
@@ -97,6 +118,11 @@ class DashboardService
         return $this->formatTasks($tasks);
     }
 
+    /**
+     * @param Task[] $tasks
+     *
+     * @return array<int, array<string, mixed>>
+     */
     private function formatTasks(array $tasks): array
     {
         return array_map(fn ($task) => [
@@ -120,6 +146,9 @@ class DashboardService
         ], $tasks);
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     private function getUserGoals(User $user): array
     {
         $goals = $this->goalRepository->findBy(
@@ -131,6 +160,11 @@ class DashboardService
         return $this->formatGoals($goals);
     }
 
+    /**
+     * @param Goal[] $goals
+     *
+     * @return array<int, array<string, mixed>>
+     */
     private function formatGoals(array $goals): array
     {
         return array_map(fn ($goal) => [
@@ -154,6 +188,9 @@ class DashboardService
         ], $goals);
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function getManagerTeamData(User $manager): array
     {
         $teams = $this->teamRepository->findBy(
@@ -164,6 +201,11 @@ class DashboardService
         return $this->formatTeams($teams);
     }
 
+    /**
+     * @param Team[] $teams
+     *
+     * @return array<int, array<string, mixed>>
+     */
     private function formatTeams(array $teams): array
     {
         return array_map(fn ($team) => [
@@ -176,7 +218,7 @@ class DashboardService
             'members' => array_map(fn ($member) => [
                 'id' => $member->getId(),
                 'name' => trim($member->getFirstName().' '.$member->getLastName()),
-            ], $team->getMembers()->toArray() ?? []),
+            ], $team->getMembers()->toArray()),
             'createdAt' => $team->getCreatedAt()?->format('Y-m-d H:i:s'),
         ], $teams);
     }

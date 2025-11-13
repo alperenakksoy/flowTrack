@@ -87,6 +87,7 @@ class Goal
     public function setTargetValue(?float $targetValue): static
     {
         $this->targetValue = $targetValue;
+
         return $this;
     }
 
@@ -139,6 +140,7 @@ class Goal
     {
         $this->unit = $unit;
     }
+
     public function getCreatedBy(): ?User
     {
         return $this->createdBy;
@@ -148,6 +150,7 @@ class Goal
     {
         $this->createdBy = $createdBy;
     }
+
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -179,6 +182,7 @@ class Goal
 
         return $this;
     }
+
     public function __toString(): string
     {
         return $this->getDescription() ?? '';

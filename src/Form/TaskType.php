@@ -18,6 +18,7 @@ class TaskType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var Team|null $managerTeam */
         $managerTeam = $options['manager_team'];
         $builder
         ->add('title', TextType::class, [

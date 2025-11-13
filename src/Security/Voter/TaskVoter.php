@@ -9,6 +9,9 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/**
+ * @extends Voter<string, Task>
+ */
 class TaskVoter extends Voter
 {
     private const array SUPPORTED_ATTRIBUTES = [
@@ -49,7 +52,7 @@ class TaskVoter extends Voter
         }
 
         /** @var ?Task $task */
-        $task = $subject instanceof Task ? $subject : null;
+        $task = $subject;
 
         return match ($attribute) {
             Permissions::VIEW, Permissions::EDIT => $task && ($task->getCreatedBy()?->getId() === $user->getId()

@@ -37,6 +37,7 @@ class GoalRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->groupBy('g.status');
 
+        /** @var array<int, array{status: string, count: int|string}> */
         $rawResults = $qb->getQuery()->getResult();
 
         $stats = [

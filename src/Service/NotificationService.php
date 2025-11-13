@@ -19,12 +19,25 @@ class NotificationService
     ) {
     }
 
+    /**
+     * @throws \LogicException if the user's email is not set
+     */
+    private function assertEmail(User $user): string
+    {
+        $email = $user->getEmail();
+        if (!$email) {
+            throw new \LogicException(sprintf('User "%s %s" does not have an email set.', $user->getFirstName(), $user->getLastName()));
+        }
+
+        return $email;
+    }
+
     public function sendTaskAssignedEmail(Task $task, User $user): void
     {
         try {
             $message = (new Email())
                 ->from($this->mailFrom)
-                ->to($user->getEmail())
+                ->to($this->assertEmail($user))
                 ->subject('New Task Assigned: '.$task->getTitle())
                 ->html($this->twig->render('email/task_assigned.html.twig', [
                     'task' => $task,
@@ -33,8 +46,6 @@ class NotificationService
 
             $this->mailer->send($message);
         } catch (\Exception $e) {
-            // Log error but don't break the task creation
-            // You can add logger here later
             error_log('Failed to send task assignment email: '.$e->getMessage());
         }
     }
@@ -44,7 +55,7 @@ class NotificationService
         try {
             $message = (new Email())
                 ->from($this->mailFrom)
-                ->to($createdBy->getEmail())
+                ->to($this->assertEmail($createdBy))
                 ->subject('Task Completed: '.$task->getTitle())
                 ->html($this->twig->render('email/task_completed.html.twig', [
                     'task' => $task,
@@ -63,7 +74,7 @@ class NotificationService
         try {
             $message = (new Email())
                 ->from($this->mailFrom)
-                ->to($user->getEmail())
+                ->to($this->assertEmail($user))
                 ->subject('⚠️ Task Deadline Reminder: '.$task->getTitle())
                 ->html($this->twig->render('email/deadline_reminder.html.twig', [
                     'task' => $task,
@@ -81,7 +92,7 @@ class NotificationService
         try {
             $message = (new Email())
                 ->from($this->mailFrom)
-                ->to($user->getEmail())
+                ->to($this->assertEmail($user))
                 ->subject('New Goal Assigned for Week '.$goal->getWeek())
                 ->html($this->twig->render('email/goal_assigned.html.twig', [
                     'goal' => $goal,

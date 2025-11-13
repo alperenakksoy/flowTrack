@@ -256,6 +256,4 @@ class PerformanceReport
     {
         return $this->getEmployee() ?? '';
     }
-
-
 }

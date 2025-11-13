@@ -9,5 +9,4 @@ class Permissions
     public const CREATE = 'create';
     public const EDIT = 'edit';
     public const DELETE = 'delete';
-
 }

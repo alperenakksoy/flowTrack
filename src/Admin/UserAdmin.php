@@ -16,6 +16,9 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
+/**
+ * @extends AbstractAdmin<User>
+ */
 final class UserAdmin extends AbstractAdmin
 {
     protected function configureFormFields(FormMapper $form): void
@@ -88,26 +91,32 @@ final class UserAdmin extends AbstractAdmin
             ->add('team')
             ->add('goals')
             ->add('assignedTasks');
-
     }
 
     private function updatePassword(User $user): void
     {
-        $user->setPassword(password_hash($user->getPlainPassword(), PASSWORD_DEFAULT));
+        $plainPassword = $user->getPlainPassword();
+
+        if (null !== $plainPassword && '' !== $plainPassword) {
+            $user->setPassword(password_hash($plainPassword, PASSWORD_DEFAULT));
+        }
     }
 
     /** @param User $object */
     public function preUpdate(object $object): void
     {
-        if (!is_null($object->getPlainPassword())) {
+        if (null !== $object->getPlainPassword() && '' !== $object->getPlainPassword()) {
             $this->updatePassword($object);
         }
-        /* @var User $object */
+
         $object->setUpdatedAt(new \DateTimeImmutable());
     }
 
+    /** @param User $object */
     protected function prePersist(object $object): void
     {
-        $this->updatePassword($object);
+        if (null !== $object->getPlainPassword() && '' !== $object->getPlainPassword()) {
+            $this->updatePassword($object);
+        }
     }
 }

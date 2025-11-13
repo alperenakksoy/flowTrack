@@ -9,6 +9,9 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/**
+ * @extends Voter<string, Goal>
+ */
 class GoalVoter extends Voter
 {
     private const array SUPPORTED_ATTRIBUTES = [
@@ -48,7 +51,7 @@ class GoalVoter extends Voter
         }
 
         /** @var ?Goal $goal */
-        $goal = $subject instanceof Goal ? $subject : null;
+        $goal = $subject;
 
         return match ($attribute) {
             Permissions::VIEW => $goal && ($goal->getEmployee()?->getId() === $user->getId()

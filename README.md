@@ -1,7 +1,3 @@
-Here is a comprehensive `README.md` file for your project, based on the code you've provided.
-
------
-
 # FlowTrack: Employee Performance & Task Tracker
 
 FlowTrack is a comprehensive, full-stack web application built with **Symfony 7** designed to manage employee tasks, weekly goals, and automated performance reviews in a corporate environment. It provides separate, data-rich dashboards for managers and employees, allowing for clear assignment of responsibilities and real-time tracking of progress.
